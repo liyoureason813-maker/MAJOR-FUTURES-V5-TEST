@@ -1,87 +1,173 @@
-/* MAJOR FUTURES V5.0 alpha: merged discovery layer; the two published apps remain unchanged. */
+/* MAJOR FUTURES V5 COMPLETE TEST — integrated native client with extracted atlas. */
 (()=>{'use strict';
-const CATALOG=Array.isArray(window.MF_CATALOG)?window.MF_CATALOG:[];
-const PROFILE_KEY='mf_v5_alpha_profile_v1';
-const HISTORY_KEY='major_futures_holland_history_v1';
-const PUBLISHED={major:'https://liyoureason813-maker.github.io/MAJOR-FUTURES/',global:'https://liyoureason813-maker.github.io/global-majors-guide/'};
-const TYPES={R:'现实型',I:'研究型',A:'艺术型',S:'社会型',E:'企业型',C:'常规型'};
+const C=window.MF_CATALOG||[], CAREERS=window.MF_CAREERS||[], QUESTIONS=window.MF_QUESTIONS||[], CROSSWALK=window.MF_CROSSWALK||[];
+const FULL=window.MF_ATLAS_FULL?.majors||[];
+const fullById=new Map(FULL.map(m=>[m.id,m]));
+const careerById=new Map(CAREERS.map(m=>[m.id,m]));
+const byId=new Map(C.map(m=>[m.id,m]));
+const T={R:'现实型',I:'研究型',A:'艺术型',S:'社会型',E:'企业型',C:'常规型'};
+const T_EN={R:'Realistic',I:'Investigative',A:'Artistic',S:'Social',E:'Enterprising',C:'Conventional'};
+const COLORS={R:'#d2a26a',I:'#468ca0',A:'#ad78b9',S:'#63a18d',E:'#cf8565',C:'#768fae'};
+const SCALE=['非常不愿意','不太愿意','不确定','比较愿意','非常愿意'];
+const SCALE_EN=['Strongly dislike','Dislike','Unsure','Like','Strongly like'];
 const SUBJECTS=['数学','高数','物理','化学','生物','经济','商务'];
-const q=(s,root=document)=>root.querySelector(s),qa=(s,root=document)=>Array.from(root.querySelectorAll(s));
-const escapeHTML=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let saved={subjects:[],manual:[],compare:[]};
-try{const p=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');if(p&&typeof p==='object')saved={subjects:Array.isArray(p.subjects)?p.subjects.filter(s=>SUBJECTS.includes(s)):[],manual:Array.isArray(p.manual)?p.manual.filter(t=>TYPES[t]).slice(0,3):[],compare:Array.isArray(p.compare)?p.compare.filter(id=>CATALOG.some(m=>m.id===id)).slice(0,3):[]}}catch(e){}
-let history=null;
-let activeApp='major';
-let loadedApp='';
-let selectedMajor='';
-const save=()=>{try{localStorage.setItem(PROFILE_KEY,JSON.stringify(saved))}catch(e){}};
-const toast=(msg)=>{const el=q('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2500)};
-function readHistory(){
- try{const arr=JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');history=Array.isArray(arr)?arr.find(v=>v&&v.result&&Array.isArray(v.result.ranked)&&/^[RIASEC]{3}$/.test(v.result.code||'')):null}catch(e){history=null}
- renderProfile();return history;
+const LS='mf_v5_beta_v1';
+const LEGACY='major_futures_holland_history_v1';
+const SCHOOL_LINKS={Oxford:'https://www.ox.ac.uk/admissions/undergraduate/applying/guide-for-applicants/admissions-tests',UCL:'https://www.ucl.ac.uk/study/prospective-students/school-teachers-and-counsellors/tests-tasks-and-interviews',LSE:'https://www.lse.ac.uk/study-at-lse/Undergraduate/Prospective-Students/How-to-Apply/Test-of-Mathematics-for-University-Admission-TMUA'};
+const ADMISSIONS=[
+ {school:'Oxford',major:'Computer Science / Computer Science and Philosophy',test:'TMUA',status:'required'},
+ {school:'Oxford',major:'Mathematics / Mathematics and Statistics / Mathematics and Computer Science / Mathematics and Philosophy',test:'TMUA',status:'required'},
+ {school:'Oxford',major:'Engineering Science',test:'ESAT',status:'required'},
+ {school:'Oxford',major:'Physics / Physics and Philosophy / Biomedical Sciences',test:'ESAT',status:'required'},
+ {school:'Oxford',major:'Economics and Management / PPE / Human Sciences / Experimental Psychology',test:'TARA',status:'required'},
+ {school:'UCL',major:'Computer Science BSc/MEng / Computer Science and Mathematics / Robotics and Artificial Intelligence MEng',test:'TARA',status:'required'},
+ {school:'UCL',major:'Mechanical Engineering BEng/MEng (2027新增)',test:'TARA',status:'required'},
+ {school:'UCL',major:'Electronic and Electrical Engineering BEng/MEng',test:'ESAT',status:'required'},
+ {school:'UCL',major:'Economics BSc',test:'TMUA',status:'required'},
+ {school:'UCL',major:'European/International Social and Political Studies',test:'UCL Thinking Skills Test',status:'required'},
+ {school:'LSE',major:'BSc Economics / BSc Econometrics and Mathematical Economics',test:'TMUA',status:'required'},
+ {school:'LSE',major:'BSc Mathematics and Economics / BSc Data Science / BSc Actuarial Science / BSc Mathematics with Data Science 等（请核对具体项目）',test:'TMUA',status:'recommended'}
+];
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const urlSafe=v=>{try{const u=new URL(String(v));return u.protocol==='https:'?u.href:'#'}catch{return '#'}};
+const esc=v=>String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const formatDate=s=>{try{return new Date(s).toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}catch{return s}};
+const empty=()=>({subjects:[],compare:[],answers:Array(60).fill(null),assessmentPage:0,result:null,manual:[],history:[],lang:'zh'});
+let state=empty();
+try{const old=JSON.parse(localStorage.getItem(LS)||'null');if(old&&typeof old==='object'){
+ state.subjects=Array.isArray(old.subjects)?old.subjects.filter(x=>SUBJECTS.includes(x)):[];
+ state.compare=Array.isArray(old.compare)?old.compare.filter(x=>byId.has(x)).slice(0,3):[];
+ state.answers=Array.isArray(old.answers)&&old.answers.length===60?old.answers.map(x=>x===null?null:[0,1,2,3,4].includes(x)?x:null):Array(60).fill(null);
+ state.assessmentPage=Math.max(0,Math.min(5,Number(old.assessmentPage)||0));
+ state.result=old.result?.code&&old.result?.sums?old.result:null;
+ state.manual=Array.isArray(old.manual)?old.manual.filter(x=>T[x]).slice(0,3):[];
+ state.history=Array.isArray(old.history)?old.history.filter(x=>x?.result?.code).slice(0,50):[];
+ state.lang=old.lang==='en'?'en':'zh';
+}}catch(e){console.warn('Unable to read saved profile',e)}
+const persist=()=>{try{localStorage.setItem(LS,JSON.stringify(state))}catch(e){console.warn('localStorage unavailable',e)}};
+const notice=m=>{const x=$('#toast');x.textContent=m;x.classList.add('show');clearTimeout(notice.timer);notice.timer=setTimeout(()=>x.classList.remove('show'),2500)};
+function legacyResults(){try{const r=JSON.parse(localStorage.getItem(LEGACY)||'[]');return Array.isArray(r)?r.filter(x=>x?.result?.code&&/^[RIASEC]{3}$/.test(x.result.code)).map(x=>({id:x.id,createdAt:x.createdAt,result:x.result,answers:x.answers,legacy:true})):[]}catch{return []}}
+function currentResult(){return state.result||[...state.history,...legacyResults()].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))[0]?.result||null}
+function currentCode(){return state.manual.length===3?state.manual.join(''):currentResult()?.code||''}
+function selectedCareer(m){const bridge=(m.careerBridges||[]).map(x=>({item:careerById.get(x.id),relation:x.relation||x.relationship})).find(x=>x.item);return bridge||null}
+function band(score){return score>=65?'高暴露':score>=40?'转型':'低替代'}
+function courseLevel(l){return {core:'核心',suggested:'推荐',bridge:'桥接'}[l]||'探索'}
+function selectedText(m){return m.subjects.map(s=>`${s.name}·${courseLevel(s.level)}`).join(' / ')}
+function calculateMatch(m){const code=currentCode(),subjects=state.subjects;
+ let interest=0; if(code)interest=m.riasec.reduce((s,x,i)=>{const k=code.indexOf(x);return k<0?s:s+(3-k)*5-Math.min(i,2)},0);
+ let course=0;if(subjects.length)course=m.subjects.reduce((s,x)=>s+(subjects.includes(x.name)?({core:5,suggested:3,bridge:1}[x.level]||0):0),0);
+ return {interest,course,total:interest+course,missingCore:subjects.length?m.subjects.filter(x=>x.level==='core'&&!subjects.includes(x.name)).map(x=>x.name):[]};}
+function rankedCatalog(){return C.map(m=>({...m,match:calculateMatch(m)})).sort((a,b)=>b.match.total-a.match.total||a.zh.localeCompare(b.zh,'zh-CN'))}
+function pageId(){return (location.hash.match(/^#(home|assessment|subjects|explore|compare|report|admissions|method)$/)||[])[1]||'home'}
+let page='';
+const pageNames={home:'规划总览',assessment:'兴趣测评',subjects:'A-Level选课',explore:'百大专业',compare:'专业对比',report:'规划报告',admissions:'2027申请',method:'来源与方法'};
+function show(view,scroll=true){if(!pageNames[view])view='home';page=view;$$('.view').forEach(el=>el.classList.toggle('shown',el.id==='view-'+view));$$('.nav button').forEach(el=>el.classList.toggle('active',el.dataset.page===view));$('#breadcrumb').textContent=pageNames[view];document.title=`${pageNames[view]} | MAJOR FUTURES V5 Full Test`;if(location.hash!=='#'+view)history.replaceState(null,'','#'+view);
+ $('#rail').classList.remove('open');if(view==='home')renderHome();if(view==='assessment')renderAssessment();if(view==='subjects')renderSubjects();if(view==='explore')renderExplore();if(view==='compare')renderCompare();if(view==='report')renderReport();if(view==='admissions')renderAdmissions();if(view==='method')renderSourceReferences();if(scroll)window.scrollTo({top:0,behavior:'instant'});}
+function renderHome(){const r=currentResult(),code=currentCode();$('#homeCode').textContent=code||'— — —';$('#homeCodeSummary').textContent=code?`当前兴趣代码：${code}`:'尚未完成兴趣测评';$('#homeProfileNote').textContent=r?'系统已读取兴趣结果。推荐排序会考虑RIASEC与课程组合。':'完成正式测评后，系统会自动生成专业探索提示。';$('#homeSubjects').textContent=state.subjects.join(' · ')||'尚未选择科目';$('#homeCompare').textContent=state.compare.map(id=>byId.get(id)?.zh).filter(Boolean).join(' · ')||'尚未选择专业';$('#compareBadge').textContent=String(state.compare.length)}
+function renderSubjects(){
+ $('#selectedSubjectCount').textContent=state.subjects.length+' / 7';$('#subjectOptions').innerHTML=SUBJECTS.map(s=>`<label class="${state.subjects.includes(s)?'on':''}"><input data-subject="${s}" type="checkbox" ${state.subjects.includes(s)?'checked':''}><span>${s}${s==='高数'?' (Further Maths)':''}</span></label>`).join('');
+ const rec=rankedCatalog().slice(0,5);$('#subjectSummary').textContent=state.subjects.length?`目前选择 ${state.subjects.join('、')}。下列专业是依据科目关联进行探索排序；灰色标注的缺少核心科目仅为进一步核对的提醒。`:'建议先选择已学习或计划学习的科目。排序还会结合你已经完成的RIASEC测评。';
+ $('#subjectRecommended').innerHTML=state.subjects.length?rec.map(m=>`<button data-detail="${esc(m.id)}">${esc(m.zh)} <span>${esc(m.match.missingCore.length?'待核对：'+m.match.missingCore.join('、'):'已覆盖映射中的核心科目')}</span></button>`).join(''):'<p class="micro">目前尚无课程条件。</p>';
 }
-function code(){return saved.manual.length?saved.manual.join(''):history?.result?.code||''}
-function codeKind(){return saved.manual.length?'manual':history?'assessment':'empty'}
-function scrollTop(){try{window.scrollTo({top:0,behavior:'instant'})}catch(e){window.scrollTo(0,0)}}
-function show(page){const supported=['home','profile','catalog','compare','workbench','sources'];if(!supported.includes(page))page='home';qa('.page').forEach(el=>el.classList.toggle('visible',el.id==='page-'+page));qa('.navbtn').forEach(el=>el.classList.toggle('active',el.dataset.page===page));document.title=(page==='home'?'MAJOR FUTURES':({profile:'我的兴趣与课程',catalog:'百大专业',compare:'专业对比',workbench:'原系统功能',sources:'来源与路线'})[page])+' · V5.0 Alpha';window.history.replaceState(null,'',`#${page}`);scrollTop();if(page==='catalog')renderCatalog();if(page==='compare')renderCompare();if(page==='workbench')loadApp(activeApp);}
-function go(page){show(page)}
-function toggleManual(t){if(saved.manual.includes(t))saved.manual=saved.manual.filter(v=>v!==t);else if(saved.manual.length<3)saved.manual.push(t);else{toast('最多选择3种兴趣类型');return}save();renderProfile();renderCatalog()}
-function renderProfile(){
- const c=code(),kind=codeKind();q('#myCode').textContent=c||'— — —';
- q('#assessmentStatus').textContent=history?`检测到最近一条测评：${history.result.code} · ${new Date(history.createdAt).toLocaleDateString('zh-CN')}。${kind==='manual'?'当前已用手动选择覆盖排序。':'当前专业排序将使用该结果。'}`:'没有在当前域名下检测到已完成的测评历史。你仍可以在下方手动选择兴趣类型，或打开原系统完成60题。';
- q('#homeHistory').textContent=history?`最近一条RIASEC兴趣代码为 ${history.result.code}。可按此结果探索100个专业。`:'当前尚未检测到测评记录。可先做60题测评，也可通过选课和关键词探索100个专业。';
- q('#interestPicker').innerHTML=Object.entries(TYPES).map(([key,zh])=>`<button type="button" data-interest="${key}" class="${saved.manual.includes(key)?'selected':''}" aria-pressed="${saved.manual.includes(key)}" title="${zh}">${key}</button>`).join('');
- q('#subjectPicks').innerHTML=SUBJECTS.map(name=>`<label><input type="checkbox" value="${name}" ${saved.subjects.includes(name)?'checked':''}>${name}</label>`).join('');
- q('#subjectCount').textContent=saved.subjects.length?'已选择：'+saved.subjects.join('、'):'尚未选择科目';
+function assessmentHistory(){const recs=[...state.history,...legacyResults()].sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,15);return recs.length?recs.map(r=>`<div class="history-item"><span><b>${esc(r.result.code)}</b> · ${formatDate(r.createdAt)} ${r.legacy?'· V4历史':''}</span><span><button data-history="${esc(r.id)}">查看</button> ${r.legacy?'':`<button data-delete-history="${esc(r.id)}">删除</button>`}</span></div>`).join(''):'<p class="micro">尚无测评历史。可从下面开始。</p>'}
+function assessmentStart(){return `<div class="assessment-intro"><div><span class="eyebrow">HOLLAND CODE · RIASEC</span><h2>你喜欢怎样工作？</h2><p>请根据个人意愿作答，0代表非常不愿意，4代表非常愿意。60道题分6组，每组10题。系统会自动保存答题进度，不会因为选答案跳回页面顶部。</p><ul><li>题目来自原MAJOR FUTURES高中情境改编版</li><li>可以随时返回修改、继续答题或重新测评</li><li>结果只用于自我探索，不预测大学录取结果</li></ul><div class="assessment-actions"><button class="btn primary" data-start-assessment="1">${state.answers.some(x=>x!==null)&&!state.result?'继续之前的测评':'开始60题测评'} ↗</button>${state.result?'<button class="btn secondary" data-show-result="1">查看当前结果</button>':''}<button class="btn secondary" data-new-assessment="1">重新开始</button></div></div><div class="big-code">R I A S E C</div></div><div class="note-box"><strong>历史记录：</strong> 记录储存在当前浏览器中，亦会尝试读取原网站同域下的历史测评。</div>${assessmentHistory()}<div class="note-box"><strong>快速探索：</strong>不做正式测评时，也可以手动选择3个类型（不生成正式测评记录）。<div class="major-pills" style="margin-top:10px">${Object.entries(T).map(([k,v])=>`<button class="small-btn ${state.manual.includes(k)?'selected':''}" data-manual="${k}" aria-pressed="${state.manual.includes(k)}">${k} ${v}</button>`).join('')}</div><small>当前：${state.manual.join('')||'无'}；手动结果优先用于专业排序，不覆盖正式60题的分数。</small> <button class="text-btn" data-clear-manual="1">清除手动兴趣</button></div>`}
+let assessmentMode='intro';
+function renderAssessment(){if(assessmentMode==='intro'){$('#assessmentPane').innerHTML=assessmentStart();return}if(assessmentMode==='result'){$('#assessmentPane').innerHTML=assessmentResults();return}
+ const start=state.assessmentPage*10,items=QUESTIONS.slice(start,start+10),count=state.answers.filter(x=>x!==null).length,lang=state.lang;
+ $('#assessmentPane').innerHTML=`<div class="assessment-progress"><div><span class="eyebrow">QUESTION ${String(start+1).padStart(2,'0')}—${String(start+10).padStart(2,'0')}</span><h2>第 ${state.assessmentPage+1} / 6 组</h2></div><div>${count}/60 已完成 · ${Math.round(100*count/60)}% <button class="text-btn" data-exit-quiz="1">保存并返回</button></div></div><div class="progress-track"><i id="quizProgress" style="width:${100*count/60}%"></i></div><p class="micro">每题选择0–4分；选择答案时不会重置页面滚动位置。可用右上角“中/EN”切换题目语言。</p>${items.map(q=>`<div class="question-card" data-question-row="${q.id}"><div class="question-head"><span>${String(q.id).padStart(2,'0')}</span><strong>${esc(q[lang])}</strong></div><div class="answer-set">${[0,1,2,3,4].map(v=>`<button type="button" data-answer="${q.id}:${v}" aria-label="问题${q.id}分数${v}" aria-pressed="${state.answers[q.id-1]===v}" class="${state.answers[q.id-1]===v?'active':''}">${v}<small>${esc((lang==='en'?SCALE_EN:SCALE)[v])}</small></button>`).join('')}</div></div>`).join('')}<div class="quiz-footer"><button class="btn secondary" data-prev-page="1" ${state.assessmentPage===0?'disabled':''}>← 上一组</button><span id="quizCount">${count}/60</span><button class="btn primary" id="quizNext" data-next-page="1" ${items.some(q=>state.answers[q.id-1]===null)?'disabled':''}>${state.assessmentPage===5?'提交测评结果':'下一组 →'}</button></div>`;
 }
-function interestScore(m){const c=code();if(!c)return 0;return m.riasec.reduce((sum,k,i)=>{const idx=c.indexOf(k);return idx<0?sum:sum+(3-idx)*5-Math.min(i,2)},0)}
-function subjectScore(m){if(!saved.subjects.length)return 0;return m.subjects.reduce((sum,s)=>sum+(saved.subjects.includes(s.name)?({core:5,suggested:3,bridge:1}[s.level]||0):0),0)}
-function totalScore(m){return interestScore(m)+subjectScore(m)}
-function courseText(m,full=false){return m.subjects.map(s=>`${s.name}（${({core:'核心',suggested:'推荐',bridge:'桥接'})[s.level]}）`).join(full?' / ':' · ')}
-function renderCatalog(){
- const cat=q('#categorySelect').value;const term=q('#majorSearch').value.trim().toLowerCase();const sort=q('#sortSelect').value;
- const subset=CATALOG.filter(m=>(!cat||m.category===cat)&&(!term||[m.zh,m.en,m.category,m.id].join(' ').toLowerCase().includes(term)));
- subset.sort((a,b)=>sort==='name'?a.zh.localeCompare(b.zh,'zh-CN'):sort==='category'?a.category.localeCompare(b.category,'zh-CN')||a.zh.localeCompare(b.zh,'zh-CN'):(totalScore(b)-totalScore(a))||a.zh.localeCompare(b.zh,'zh-CN'));
- const has=Boolean(code()||saved.subjects.length);
- q('#catalogHelp').textContent=has?`探索排序参考：${code()?'兴趣 '+code()+'（'+(codeKind()==='manual'?'手动模拟':'测评记录')+'）':''}${code()&&saved.subjects.length?' + ':''}${saved.subjects.length?'已选科目 '+saved.subjects.join('、'):''}。排序是启发式参考，不代表录取概率。`:'当前没有兴趣或选课条件，按名称显示。进入“我的兴趣与选课”后可查看更个性化的探索排序。';
- q('#catalogCount').textContent=`${subset.length} / ${CATALOG.length} 个专业`;
- q('#majorGrid').innerHTML=subset.length?subset.map(m=>`<article class="major-card"><div class="card-top"><small>${escapeHTML(m.category)}</small>${has&&totalScore(m)>0?'<b>优先探索</b>':''}</div><h3>${escapeHTML(m.zh)}</h3><div class="en">${escapeHTML(m.en)}</div><div class="card-ria">RIASEC：<b>${m.riasec.join(' · ')}</b></div><div class="card-subjects">${m.subjects.map(s=>`<span class="pill ${s.level}">${escapeHTML(s.name)} · ${{core:'核心',suggested:'推荐',bridge:'桥接'}[s.level]}</span>`).join('')}</div><div class="card-actions"><button type="button" class="${saved.compare.includes(m.id)?'added':''}" data-compare="${m.id}">${saved.compare.includes(m.id)?'✓ 已加入':'＋ 加入对比'}</button><button type="button" data-major-detail="${m.id}">进入完整图鉴 ↗</button>${m.careerBridges?.length?`<button type="button" data-career-detail="${m.id}">职业路径深读 ↗</button>`:''}</div></article>`).join(''):'<div class="empty">未找到对应专业。请调整关键词或学科类别。</div>';
+function scoreResult(answers){const sums={R:0,I:0,A:0,S:0,E:0,C:0};QUESTIONS.forEach(q=>sums[q.type]+=Number(answers[q.id-1]||0));const order='RIASEC'.split('');const ranked=order.map(k=>({k,score:sums[k]})).sort((a,b)=>b.score-a.score||order.indexOf(a.k)-order.indexOf(b.k));return {sums,ranked,code:ranked.slice(0,3).map(x=>x.k).join('')};}
+function radar(sums){const keys='RIASEC'.split(''),cx=170,cy=158,r=109;const poly=(frac,values)=>keys.map((k,i)=>{const a=(i*60-150)*Math.PI/180,rr=r*frac*(values?values[k]/40:1);return`${(cx+rr*Math.cos(a)).toFixed(1)},${(cy+rr*Math.sin(a)).toFixed(1)}`}).join(' ');return `<svg viewBox="0 0 340 340" role="img" aria-label="RIASEC六维兴趣雷达图">${[1,.75,.5,.25].map(f=>`<polygon points="${poly(f)}" fill="none" stroke="#cfdde0" stroke-width="1"/>`).join('')}<polygon points="${poly(1,sums)}" fill="#8bc7b17e" stroke="#36937d" stroke-width="3"/>${keys.map((k,i)=>{const a=(i*60-150)*Math.PI/180,x=cx+(r+30)*Math.cos(a),y=cy+(r+30)*Math.sin(a);return `<circle cx="${x}" cy="${y}" r="15" fill="${COLORS[k]}"/><text x="${x}" y="${y+4}" text-anchor="middle" fill="white" font-size="12" font-weight="800">${k}</text>`}).join('')}</svg>`}
+function assessmentResults(){const r=currentResult();if(!r)return assessmentStart();const matched=rankedCatalog().slice(0,6);return `<div class="result-layout"><div class="result-main"><span class="eyebrow" style="color:#cfeec6">YOUR RIASEC PROFILE</span><div class="code">${esc(r.code)}</div><p>前三位兴趣：${esc(r.ranked?.slice(0,3).map(x=>T[x.k]).join(' · ')||r.code)}。每类原始分数范围0–40，表示对该类活动的相对意愿，不代表能力或职业适配概率。</p><button class="btn primary" data-go="explore">探索推荐专业 →</button></div><div class="radar-card">${radar(r.sums)}<small>RIASEC / 每类满分40</small></div></div><div class="result-bars">${(r.ranked||[]).map(x=>`<div class="bar-row"><strong>${x.k} · ${T[x.k]}</strong><div class="bar-track"><i style="width:${100*x.score/40}%;background:${COLORS[x.k]}"></i></div><b>${x.score}/40</b></div>`).join('')}</div><h3>与你当前兴趣、选课值得一起探索的专业</h3><div class="result-related">${matched.map(m=>`<button data-detail="${esc(m.id)}">${esc(m.zh)}<small>${m.riasec.map(k=>k+' '+T[k]).join(' · ')}</small></button>`).join('')}</div><div class="assessment-actions"><button class="btn secondary" data-go="report">生成我的规划报告</button><button class="btn secondary" data-new-assessment="1">重新测评</button><button class="text-btn" data-exit-quiz="1">返回兴趣测评首页</button></div><div class="note-box">这份学校情境测评没有本地常模；兴趣倾向与分数不是高等教育录取概率、求职成功率或心理测量诊断。</div>`}
+function finishAssessment(){if(state.answers.some(x=>x===null))return notice('请先完成全部60题');state.result=scoreResult(state.answers);state.manual=[];state.history.unshift({id:'V5-'+Date.now(),createdAt:new Date().toISOString(),result:state.result,answers:[...state.answers]});state.history=state.history.slice(0,50);assessmentMode='result';persist();renderAssessment();notice('测评完成，记录已保存到本机浏览器')}
+function updateAnswerUI(id,val){state.answers[id-1]=val;persist();const row=$(`[data-question-row="${id}"]`);$$('[data-answer]',row).forEach(btn=>{const active=Number(btn.dataset.answer.split(':')[1])===val;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});const count=state.answers.filter(x=>x!==null).length;$('#quizProgress').style.width=`${100*count/60}%`;$('#quizCount').textContent=`${count}/60`;$('#quizNext').disabled=QUESTIONS.slice(state.assessmentPage*10,state.assessmentPage*10+10).some(q=>state.answers[q.id-1]===null)}
+function renderExplore(){const cat=$('#categoryFilter'),term=$('#searchMajor'),sort=$('#sortFilter');if(!cat.dataset.ready){const values=[...new Set(C.map(x=>x.category))];values.sort((a,b)=>a.localeCompare(b,'zh-CN'));cat.innerHTML='<option value="">全部学科类别</option>'+values.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');cat.dataset.ready='1'}
+ let rows=rankedCatalog().filter(m=>(!cat.value||m.category===cat.value)&&(!term.value.trim()||[m.zh,m.en,m.category,m.id].join(' ').toLowerCase().includes(term.value.trim().toLowerCase())));
+ if(sort.value==='name')rows.sort((a,b)=>a.zh.localeCompare(b.zh,'zh-CN'));else if(sort.value==='group')rows.sort((a,b)=>a.category.localeCompare(b.category,'zh-CN')||a.zh.localeCompare(b.zh,'zh-CN'));
+ $('#resultCount').textContent=`${rows.length} / 100 个专业`;$('#filterHint').textContent=(currentCode()||state.subjects.length)?`当前条件：RIASEC ${currentCode()||'尚无'} · A-Level ${state.subjects.join('、')||'未选'}。匹配排序是启发式分数。`:'选择兴趣或A-Level课程，获得更具针对性的排序。';
+ $('#majorCards').innerHTML=rows.map(m=>{const br=selectedCareer(m),picked=state.compare.includes(m.id);return `<article class="major-card"><div class="major-meta"><span>${esc(m.category)}</span>${br?`<em>${br.relation==='exact'?'深度职业分析':'相关职业分析'}</em>`:'<span>100专业图鉴</span>'}</div><h3>${esc(m.zh)}</h3><h4>${esc(m.en)}</h4><div class="major-pills">${m.riasec.map(k=>`<span>${k} ${T[k]}</span>`).join('')}</div><p>${esc(m.subjects.map(s=>s.name).join(' · '))}${(currentCode()||state.subjects.length)?` · 探索分 ${m.match.total}`:''}</p><div class="major-actions"><button class="primary-small" data-detail="${esc(m.id)}">查看详情 ↗</button><button class="${picked?'added':''}" data-toggle-compare="${esc(m.id)}">${picked?'✓ 已加入':'＋ 加入对比'}</button></div></article>`}).join('')||'<div class="compare-empty">没有找到相关专业。可以尝试其他关键词或重置筛选。</div>';
 }
-function renderCompare(){const ms=saved.compare.map(id=>CATALOG.find(m=>m.id===id)).filter(Boolean);const el=q('#compareArea');
- if(!ms.length){el.innerHTML='<div class="compare-empty">尚未选择专业。请到“百大专业地图”中添加1至3个专业。</div>';return}
- const td=(fn)=>'<tr>'+['<td>'+fn(null,true)+'</td>',...ms.map(m=>'<td>'+fn(m,false)+'</td>')].join('')+'</tr>';
- el.innerHTML=`<table class="compare-table"><thead><tr><th>对比维度</th>${ms.map(m=>`<th>${escapeHTML(m.zh)}<br><small>${escapeHTML(m.en)}</small><br><button class="compare-remove" data-remove="${m.id}">移除 ×</button></th>`).join('')}</tr></thead><tbody>${td((m,header)=>header?'学科类别':escapeHTML(m.category))}${td((m,header)=>header?'兴趣倾向':m.riasec.join(' · '))}${td((m,header)=>header?'A-Level映射':escapeHTML(courseText(m,true)))}${td((m,header)=>header?'当前兴趣对应':code()?`${interestScore(m)>0?'有相似类型':'相似类型较少'}（探索性判断）`:'尚未填写兴趣')}${td((m,header)=>header?'已选课程对应':saved.subjects.length?escapeHTML(m.subjects.filter(s=>saved.subjects.includes(s.name)).map(s=>s.name).join('、')||'没有直接重叠的映射科目'):'尚未选择科目')}${td((m,header)=>header?'详细资料':`<button class="linkbtn" data-major-detail="${m.id}">打开原图鉴 ↗</button>`)}</tbody></table>`;
+function fullAtlasBlock(m){
+ const d=fullById.get(m.id);
+ if(!d)return `<div class="note-box missing-atlas"><b>此站还没有生成100专业完整档案。</b>请在仓库启用 GitHub Actions 发布工作流，构建会从同账号的百大专业指南提取完整原始内容，生成本地数据文件。<p>已整合的60题、选课和28专业职业数据仍然可正常使用。</p></div>`;
+ const arr=(list,n=12)=>Array.isArray(list)?list.slice(0,n):[];
+ const tags=(v)=>`<div class="major-pills">${arr(v,30).map(a=>`<span>${esc(a)}</span>`).join('')}</div>`;
+ const courseItems=arr(d.courses).map(q=>`<div class="detail-item"><strong>${esc(q.name)} · ${courseLevel(q.level)}</strong><p>${esc(q.reason)}</p></div>`).join('');
+ const related=arr(d.related,14).map(t=>{let link=C.find(x=>x.zh===t||x.zh.includes(t)||t.includes(x.zh));return link?`<button class="small-btn related-btn" data-detail="${esc(link.id)}">${esc(t)} ↗</button>`:`<span class="related-label">${esc(t)}</span>`}).join('');
+ const courses=arr(d.courseLinks,12).map(t=>`<a class="resource-link" href="${esc(urlSafe(t.href))}" target="_blank" rel="noopener noreferrer"><b>${esc(t.title)}</b><small>${esc(t.provider)} · ${esc(t.platform)} · ${esc(t.level)} · ${esc(t.access)}</small><span>${esc(t.note)}</span></a>`).join('');
+ const salary=arr(d.salary,3).map(q=>{const [a,b]=q.range;return `<div class="salary-detail-row"><span>${esc(q.label)}</span><div class="salary-range"><i style="left:${Math.max(0,Math.min(100,a))}%;width:${Math.max(1,Math.min(100,b)-Math.max(0,a))}%"></i></div><b>${esc(a)}–${esc(b)}万元</b></div>`}).join('');
+ const sources=`<div class="resource-buttons"><a href="https://www.ucas.com/explore/search/all?query=${encodeURIComponent(m.en)}" target="_blank" rel="noopener noreferrer">UCAS 英国课程检索 ↗</a><a href="https://bigfuture.collegeboard.org/majors" target="_blank" rel="noopener noreferrer">BigFuture 美国专业目录 ↗</a><a href="https://www.topuniversities.com/subject-rankings" target="_blank" rel="noopener noreferrer">QS 学科排名 ↗</a></div>`;
+ return `<div class="full-atlas">
+  <div class="atlas-heading"><span class="chip">100专业 · 全量原站资料</span><small>资料取自本人原图鉴的已发布专业记录</small></div>
+  <h3 class="modal-section-title">完整专业介绍与学习内容</h3><p class="detail-blurb"><strong>${esc(d.summary)}</strong></p><p class="long-copy">${esc(d.overview)}</p>
+  <h3 class="modal-section-title">可能适合的兴趣与学习方式</h3><ul class="atlas-list">${arr(d.fit,10).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="micro">MBTI 偏好示例：${esc(arr(d.mbti).join(' · '))}；仅供自我探索，不可据此判断能力或录取资格。</p>
+  <h3 class="modal-section-title">A-Level 科目对应理由</h3><div class="detail-items">${courseItems}</div><p class="micro">课程级别来自原专业图鉴的探索映射；是否为必修课请以目标大学当年官网为准。</p>
+  <h3 class="modal-section-title">申请准备和学术探索</h3><p class="detail-blurb"><b>准备建议：</b>${esc(d.outsidePrep)}</p>
+  <div class="atlas-dual"><div><h4>活动／项目示例</h4><ul class="atlas-list">${arr(d.activities,30).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div><div><h4>线上课程与学习资源</h4><div class="resource-list">${courses||'<p>原站未配置在线课程链接。</p>'}</div><h4>原站列出的课程名称</h4><ul class="atlas-list">${arr(d.onlineCourses,20).map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div></div>
+  <h3 class="modal-section-title">典型职业出口与未来接口</h3>${tags(d.careers)}<h4>前沿方向</h4><ul class="atlas-list">${arr(d.frontiers,14).map(t=>`<li>${esc(t)}</li>`).join('')}</ul><h4>原站职业场景说明</h4><p class="long-copy">${esc(d.careerContext)}</p>
+  <h3 class="modal-section-title">中国薪酬阶段参考（非录取或薪资承诺）</h3><p class="detail-blurb">原站趋势判断：<strong>${esc(d.outlook)}</strong>。一线及新一线城市税前年薪总包估算，单位万元；属职业簇区间，不是该专业毕业生薪酬统计。</p>${salary}<p class="micro">${esc(d.salaryNote)}</p>
+  <h3 class="modal-section-title">相关专业</h3><div class="related-majors">${related||'无关联项'}</div>
+  <h3 class="modal-section-title">学校与院校资源</h3>${sources}
+  <div class="note-box">来源：同账号 <a href="https://github.com/liyoureason813-maker/global-majors-guide" target="_blank" rel="noopener noreferrer">global-majors-guide</a> 发布资料。活动、课程链接、薪酬估算及来源页码为原站历史信息，尚未逐一人工复核最新有效性。原图鉴资料页码：${esc((d.sourcePages||[]).join('、'))}。数据版本：${esc(window.MF_ATLAS_FULL?.manifest?.sourceGitBlob?.slice(0,12)||'待生成')}。</div>
+ </div>`;
 }
-function modifyCompare(id){if(saved.compare.includes(id))saved.compare=saved.compare.filter(x=>x!==id);else if(saved.compare.length<3)saved.compare.push(id);else{toast('最多比较3个专业，请先移除一个');return}save();renderCatalog();renderCompare();toast('专业对比已更新')}
-function chooseApp(app){activeApp=app==='global'?'global':'major';loadApp(activeApp)}
-function loadApp(app){
- qa('.app-switch [data-app]').forEach(el=>el.classList.toggle('active',el.dataset.app===app));
- const title=app==='major'?'MAJOR FUTURES V4.2.2 · 正式网站':'海外百大专业指南 · 正式网站';q('#appLocation').textContent=title;
- const url=PUBLISHED[app];q('#externalSite').href=url;
- const frame=q('#legacyFrame');frame.title=title;
- if(loadedApp!==app){frame.src=url;loadedApp=app}
- q('#embedNotice').hidden=false;q('#embedNotice').textContent='如浏览器不显示此模块，可点击“独立标签页打开”。首次加载需要连接网络。';
+function toggleCompare(id){if(state.compare.includes(id)){state.compare=state.compare.filter(x=>x!==id);notice('已移出比较清单')}else{if(state.compare.length>=3)return notice('最多同时比较3个专业');state.compare.push(id);notice('已加入比较清单')}persist();$('#compareBadge').textContent=state.compare.length;if(page==='compare')renderCompare();if(page==='explore')renderExplore();if($('#majorDialog').open&&byId.has(id)){$$(`[data-dialog-compare="${id}"]`).forEach(x=>x.textContent=state.compare.includes(id)?'✓ 已加入对比':'＋ 加入专业对比')}}
+function openDetail(id){const m=byId.get(id);if(!m)return;const obj=selectedCareer(m),x=obj?.item;const matching=calculateMatch(m);
+ const dir=(arr,key)=>arr.map((a,i)=>`<div class="detail-item"><h4>${esc(a.direction)}</h4><div class="job-list">${esc(a.jobs.join(' · '))}</div><small>常见入门学历：${esc(a.entry)}<br>进一步发展：${esc(a.preferred)}</small><p>${esc(a.why)}</p></div>`).join('');
+ const careers=x?`<h3 class="modal-section-title">28重点专业补充：岗位与学历深度路径</h3><div class="detail-data"><div><small>AI任务暴露提示</small><strong>${band(x.risk)}（原站任务指标${x.risk}）</strong></div><div><small>9组职业细分方向</small><strong>27条岗位示例</strong></div><div><small>与当前专业关系</small><strong>${obj.relation==='exact'?'直接对应':'相关方向（不是同一专业）'}</strong></div></div><div class="note-box">原站AI评分不是岗位消失概率；学历为一般提示，尚未逐项按O*NET 31.0更新。</div>${[['high','high','高暴露任务方向'],['border','mid','AI转型任务方向'],['safe','low','低替代任务方向']].map(([key,cls,title])=>`<div class="detail-zone ${cls}"><h3>${title}</h3><div class="detail-items">${dir(x[key],key)}</div></div>`).join('')}<h4>高中阶段准备</h4><ol>${x.advice.slice(0,4).map(s=>`<li class="detail-blurb">${esc(s)}</li>`).join('')}</ol>`:'<p class="micro">原MAJOR FUTURES的职业与学历深度岗位数据尚未覆盖此专业；以下100专业全量档案提供原图鉴职业场景、薪酬区间及项目建议。</p>';
+ $('#dialogInner').innerHTML=`<div class="modal-inner"><div class="modal-header"><div><span class="eyebrow">${esc(m.category)} · MAJOR ATLAS</span><h2>${esc(m.zh)}</h2><small>${esc(m.en)}</small></div><button class="modal-close" data-close-dialog="1" aria-label="关闭专业详情">×</button></div><h3 class="modal-section-title">兴趣与课程对应</h3><div class="detail-data"><div><small>RIASEC兴趣倾向</small><strong>${m.riasec.map(k=>k+' '+T[k]).join(' · ')}</strong></div><div><small>A-Level探索科目</small><strong>${esc(selectedText(m))}</strong></div><div><small>当前综合探索指数</small><strong>${matching.total} 分（非录取概率）</strong></div></div>${matching.missingCore.length?`<div class="note-box">课程映射中标注的核心科目尚未全部勾选：${esc(matching.missingCore.join('、'))}。请核对目标课程官网，不能直接视为不符合录取条件。</div>`:''}${fullAtlasBlock(m)}${careers}<div class="assessment-actions"><button class="btn primary" data-dialog-compare="${esc(id)}">${state.compare.includes(id)?'✓ 已加入对比':'＋ 加入专业对比'}</button><button class="btn secondary" data-go="report">进入个人规划报告</button></div></div>`;
+ const d=$('#majorDialog');if(!d.open)d.showModal();d.scrollTop=0;
 }
-function openDetail(id){const m=CATALOG.find(x=>x.id===id);if(!m)return;selectedMajor=m.zh;q('#selectedMajorText').textContent=`你选中了：${m.zh}（${m.en}）。请在下方完整图鉴搜索该名称查看详情。`;q('#selectedMajorHint').hidden=false;chooseApp('global');go('workbench');toast(`请在完整图鉴中搜索「${m.zh}」查看详细资料。`);
- // The published React bundle has no documented deep-link API. Do not attempt brittle DOM injection.
+
+function renderCompare(){if(!state.compare.length){$('#compareContent').innerHTML='<div class="compare-empty"><h2>你还没有选择专业</h2><p>进入专业地图，点击“加入对比”，最多选择3个专业。</p></div>';return}
+ const a=state.compare.map(id=>byId.get(id)).filter(Boolean), cols=m=>{const c=selectedCareer(m);return c?.item||null};
+ const rows=[['所属学科',m=>esc(m.category)],['RIASEC兴趣',m=>m.riasec.map(k=>k+' · '+T[k]).join('<br>')],['A-Level科目',m=>esc(selectedText(m))],['当前综合探索分',m=>calculateMatch(m).total+'（非录取概率）'],['100专业完整详情',m=>fullById.has(m.id)?'已迁入 · 长文 / 申请 / 课程 / 薪酬 / 资源':'尚未生成（需GitHub Actions构建）'],['中国薪酬区间',m=>fullById.get(m.id)?.salary?.map(x=>esc(x.label)+': '+esc(x.range.join('–'))+'万').join('<br>')||'未加载'],['申请准备建议',m=>esc(fullById.get(m.id)?.outsidePrep||'详情待生成')],['典型职业出口',m=>esc(fullById.get(m.id)?.careers?.slice(0,4).join('、')||'待生成')],['深度职业资料',m=>cols(m)?`有 · ${cols(m).high.length+cols(m).border.length+cols(m).safe.length}条方向、27条岗位示例`:'本专业无深度岗位分析'],['AI任务影响',m=>cols(m)?`${band(cols(m).risk)} · 定性提示`:'暂无逐岗位核对'],['升学准备提示',m=>cols(m)?esc(cols(m).advice[0]):esc(fullById.get(m.id)?.outsidePrep||'请核对目标大学要求')]];
+ $('#compareContent').innerHTML=`<div class="compare-table-wrap"><table class="compare-table"><thead><tr><th>比较维度</th>${a.map(m=>`<th>${esc(m.zh)}<br><small>${esc(m.en)}</small><br><button data-remove-compare="${esc(m.id)}">移出比较 ×</button> <button data-detail="${esc(m.id)}">查看完整资料 ↗</button></th>`).join('')}</tr></thead><tbody>${rows.map(([name,fn])=>`<tr><td>${name}</td>${a.map(m=>`<td>${fn(m)}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="note-box">比较分数是课程与兴趣的探索线索；尚未验证兴趣推荐或AI风险的统计效度，不用于预测录取、薪酬或就业。</div>`;
 }
-function openCareer(id){const m=CATALOG.find(x=>x.id===id);if(!m?.careerBridges?.length)return;const names=m.careerBridges.map(v=>v.zh+(v.relationship==='related'?'（相关方向）':'')).join('、');selectedMajor=names;q('#selectedMajorText').textContent=`与「${m.zh}」关联的MAJOR FUTURES职业分析：${names}。请在下方原网站的“探索专业”中搜索相应方向。相关方向不等于同一专业。`;q('#selectedMajorHint').hidden=false;chooseApp('major');go('workbench');toast(`请在职业地图中搜索「${m.careerBridges[0].zh}」`)}
-function init(){
- const cats=[...new Set(CATALOG.map(x=>x.category))].sort((a,b)=>a.localeCompare(b,'zh-CN'));q('#categorySelect').insertAdjacentHTML('beforeend',cats.map(x=>`<option value="${escapeHTML(x)}">${escapeHTML(x)}</option>`).join(''));
- qa('.navbtn').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
- document.addEventListener('click',(e)=>{const jump=e.target.closest('[data-jump]');if(jump){go(jump.dataset.jump);return}const nav=e.target.closest('a[data-nav]');if(nav){e.preventDefault();go(nav.dataset.nav);return}const op=e.target.closest('[data-open]');if(op){chooseApp(op.dataset.open);go('workbench');return}const interest=e.target.closest('[data-interest]');if(interest){toggleManual(interest.dataset.interest);return}const compare=e.target.closest('[data-compare]');if(compare){modifyCompare(compare.dataset.compare);return}const remove=e.target.closest('[data-remove]');if(remove){modifyCompare(remove.dataset.remove);return}const career=e.target.closest('[data-career-detail]');if(career){openCareer(career.dataset.careerDetail);return}const detail=e.target.closest('[data-major-detail]');if(detail){openDetail(detail.dataset.majorDetail);return}});
- q('#subjectPicks').addEventListener('change',(e)=>{if(e.target.matches('input[type=checkbox]')){const v=e.target.value;if(e.target.checked&&!saved.subjects.includes(v))saved.subjects.push(v);else if(!e.target.checked)saved.subjects=saved.subjects.filter(s=>s!==v);save();renderProfile();renderCatalog()}});
- q('#clearSubjects').addEventListener('click',()=>{saved.subjects=[];save();renderProfile();renderCatalog()});
- q('#clearInterest').addEventListener('click',()=>{saved.manual=[];save();readHistory();renderCatalog()});
- q('#syncButton').addEventListener('click',()=>{readHistory();renderCatalog();toast(history?'已读取最近一条测评结果':'未找到本浏览器的已完成测评记录')});
- q('#readHistory').addEventListener('click',()=>{readHistory();renderCatalog();toast(history?'测评记录已同步':'尚未发现测评记录')});
- q('#majorSearch').addEventListener('input',renderCatalog);q('#categorySelect').addEventListener('change',renderCatalog);q('#sortSelect').addEventListener('change',renderCatalog);
- q('#resetCatalog').addEventListener('click',()=>{q('#majorSearch').value='';q('#categorySelect').value='';q('#sortSelect').value='relevance';renderCatalog()});
- qa('.app-switch [data-app]').forEach(b=>b.addEventListener('click',()=>chooseApp(b.dataset.app)));
- q('#copyMajorName').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(selectedMajor);toast('专业名称已复制')}catch(e){toast('复制不可用，可直接选择名称后复制')}});
- q('#reloadApp').addEventListener('click',()=>{const fr=q('#legacyFrame');fr.src=PUBLISHED[activeApp];toast('正在重新加载原网站模块')});
- window.addEventListener('storage',(e)=>{if(e.key===HISTORY_KEY){readHistory();renderCatalog()}});
- readHistory();renderCatalog();renderCompare();go(location.hash.slice(1)||'home');
+function renderReport(){const r=currentResult(),co=currentCode(),tops=rankedCatalog().slice(0,6),chosen=state.compare.map(id=>byId.get(id)).filter(Boolean);const currentDate=new Date().toLocaleDateString('zh-CN');
+ $('#reportBody').innerHTML=`<div style="border-bottom:4px solid #2c766e;padding-bottom:20px"><small class="eyebrow">MAJOR FUTURES · PERSONAL EXPLORATION REPORT</small><h1>专业探索与升学规划报告</h1><div style="font-size:12px;color:#7a8e9a">生成日期：${currentDate} · V5.0 完整内容测试版 · 仅供探索，不作录取概率评估</div></div><h2>01 / 个人兴趣与课程背景</h2><div class="report-grid"><div class="report-highlight"><small>RIASEC兴趣代码</small><strong>${esc(co||'未完成')}</strong><p>${r?'正式测评分数已保存在本浏览器。':state.manual.length===3?'当前为人工选择，仅供模拟，不代表60题测评结果。':'建议先完成60题测评。'}</p></div><div class="report-highlight"><small>我的A-Level选课</small><strong style="font-size:18px;letter-spacing:0">${esc(state.subjects.join(' · ')||'尚未填写')}</strong><p>科目级标签仅供专业探索；申请需核对大学官网。</p></div></div>${r?`<h3>六类型测评分数</h3><div class="result-bars">${(r.ranked||[]).map(x=>`<div class="bar-row"><strong>${x.k} · ${T[x.k]}</strong><div class="bar-track"><i style="width:${x.score/40*100}%;background:${COLORS[x.k]}"></i></div><b>${x.score}/40</b></div>`).join('')}</div>`:''}<h2>02 / 值得探索的本科专业</h2><p>结合当前兴趣和选课，以下为探索性排序，按自定义积分展示，**并非匹配概率或录取概率**。</p>${tops.map((m,i)=>`<div class="report-major"><strong>${String(i+1).padStart(2,'0')} · ${esc(m.zh)} / ${esc(m.en)}</strong><p>兴趣 ${m.riasec.join('、')} · 课程 ${esc(m.subjects.map(s=>s.name+'('+courseLevel(s.level)+')').join('、'))} · 探索积分 ${m.match.total}</p></div>`).join('')}<h2>03 / 我的备选专业比较</h2>${chosen.length?chosen.map(m=>{const cr=selectedCareer(m)?.item,extra=fullById.get(m.id);return `<div class="report-major"><h3>${esc(m.zh)}</h3><p>RIASEC ${m.riasec.join(' / ')}；A-Level ${esc(selectedText(m))}。</p>${cr?`<p>深度职业方向：${cr.high.length+cr.border.length+cr.safe.length}个；原站任务影响：${band(cr.risk)}。建议：${esc(cr.advice[0])}</p>`:'<p>本专业目前没有28专业的深度岗位资料。</p>'}${extra?`<p><b>申请准备：</b>${esc(extra.outsidePrep)}</p><p><b>典型职业：</b>${esc(extra.careers.slice(0,5).join('、'))}</p><p><b>原站薪酬阶段参考：</b>${esc(extra.salary.map(q=>q.label+' '+q.range.join('–')+'万').join('；'))}</p>`:''}</div>`}).join(''):'<p>尚未加入专业比较；可以先从100专业目录选择1–3个。</p>'}<h2>04 / 下一步行动清单</h2><ol><li>在未来两周进一步阅读2–3个目标专业的大学官方课程模块及A-Level要求。</li><li>选一个能验证个人兴趣的课程外研究或实际项目，记录自己的证据与反思。</li><li>如果目标学校设置入学考试，按照具体专业与2027入学周期核对官方要求。</li><li>与升学指导教师讨论课程选择、申请可行性与职业体验，而不是仅根据本报告决定。</li></ol><div class="note-box"><strong>数据与伦理说明：</strong>本报告由学校情境RIASEC、100专业基础映射及28重点专业的职业分析组合生成。不同模块的资料年份可能不同，AI影响不是岗位流失概率，薪酬数据未被用于计算推荐分数。个人资料仅在浏览器本地保存。</div>`;
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+function renderSourceReferences(){const target=$('#originalRefs');if(!target)return;const refs=window.MF_ATLAS_FULL?.manifest?.sourceReferences||[];target.innerHTML=refs.length?`<h3>原海外百大专业指南资料来源（原站原样保留）</h3><div class="resource-list">${refs.map(r=>`<a class="resource-link" target="_blank" rel="noopener noreferrer" href="${esc(urlSafe(r.href))}"><b>${esc(r.label)}</b><small>${esc(r.note||'原站来源')}</small></a>`).join('')}</div>`:'<p class="micro">完整原站来源列表将在GitHub Actions构建后显示。</p>';}
+function renderAdmissions(){const school=$('#schoolFilter').value,query=$('#admissionSearch').value.trim().toLowerCase();let arr=ADMISSIONS.filter(x=>(!school||school===x.school)&&(!query||[x.school,x.major,x.test].join(' ').toLowerCase().includes(query)));$('#admissionsList').innerHTML=arr.map(x=>`<div class="admission-row"><strong>${x.school}</strong><div><b>${esc(x.major)}</b><p>入学测试：<b>${esc(x.test)}</b> · 2027 entry · 仅针对列明的本科项目</p><a href="${SCHOOL_LINKS[x.school]}" target="_blank" rel="noopener">检查${x.school}官方课程要求 ↗</a></div><span class="status-badge ${x.status==='recommended'?'recommended':''}">${x.status==='recommended'?'建议参加':'必考'}</span></div>`).join('')||'<div class="compare-empty">没有匹配课程。请调整关键词。</div>'}
+function download(name,text,type='text/plain;charset=utf-8'){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([text],{type}));a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function downloadStandaloneReport(){renderReport();const content=$('#reportBody').innerHTML;const css=`body{font:14px/1.8 system-ui,'Noto Sans SC',sans-serif;max-width:860px;margin:35px auto;color:#20384b;padding:16px}h1{font-size:32px}h2{border-bottom:1px solid #dce4e9;padding-bottom:10px;margin-top:30px}.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.report-highlight,.report-major,.note-box{padding:13px 18px;background:#f5f8f7;border-radius:9px;margin:10px 0}.report-highlight strong{display:block;font-size:28px}.bar-row{display:flex;align-items:center;gap:15px;margin:8px}.bar-track{width:200px;height:10px;background:#e6eef2}.bar-track i{height:100%;display:block}.eyebrow{font-size:11px;color:#386d5d}@media print{body{margin:0}h2{break-after:avoid}.report-major{break-inside:avoid}}`;
+ download('MAJOR-FUTURES-V5-个人规划报告.html',`<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>MAJOR FUTURES · 个人规划报告</title><style>${css}</style><body>${content}<p style="text-align:center"><button onclick="window.print()">打印 / 保存PDF</button></p></body></html>`,'text/html;charset=utf-8');}
+function resetAll(){if(!confirm('确定清除本浏览器保存的V5测评、选课、对比和历史记录吗？原MAJOR FUTURES的历史记录不会被清除。'))return;state=empty();persist();assessmentMode='intro';show('home');notice('V5本地资料已清除')}
+// Events
+$('#menuToggle').addEventListener('click',()=>$('#rail').classList.toggle('open'));
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(b)show(b.dataset.page)});
+window.addEventListener('hashchange',()=>show(pageId(),false));
+$('#goReport').onclick=()=>show('report');
+$('#langToggle').onclick=()=>{state.lang=state.lang==='zh'?'en':'zh';persist();if(page==='assessment'){renderAssessment();notice(state.lang==='en'?'Question language: English':'题目语言：中文')}else notice('题目语言切换已保存，在测评页面生效')};
+$('#main').addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.go){if($('#majorDialog').open)$('#majorDialog').close();show(b.dataset.go);return}
+ if(b.dataset.detail){openDetail(b.dataset.detail);return}
+ if(b.dataset.toggleCompare){toggleCompare(b.dataset.toggleCompare);return}
+ if(b.dataset.removeCompare){toggleCompare(b.dataset.removeCompare);return}
+ if(b.dataset.startAssessment){assessmentMode='questions';renderAssessment();return}
+ if(b.dataset.exitQuiz){assessmentMode='intro';renderAssessment();return}
+ if(b.dataset.newAssessment){if(state.answers.some(x=>x!==null)&&!confirm('要重新开始测评吗？原始记录会保留，但目前未完成的答题进度将被清除。'))return;state.answers=Array(60).fill(null);state.assessmentPage=0;state.result=null;assessmentMode='questions';persist();renderAssessment();return}
+ if(b.dataset.showResult){assessmentMode='result';renderAssessment();return}
+ if(b.dataset.answer){const [id,val]=b.dataset.answer.split(':').map(Number);updateAnswerUI(id,val);return}
+ if(b.dataset.prevPage){state.assessmentPage=Math.max(0,state.assessmentPage-1);persist();renderAssessment();$('#assessmentPane').scrollIntoView({block:'start',behavior:'instant'});return}
+ if(b.dataset.nextPage){const p=state.assessmentPage;const start=p*10;if(state.answers.slice(start,start+10).some(x=>x===null))return notice('请完成本组全部10题');if(p===5){finishAssessment();$('#assessmentPane').scrollIntoView({block:'start'});}else{state.assessmentPage++;persist();renderAssessment();$('#assessmentPane').scrollIntoView({block:'start',behavior:'instant'})}return}
+ if(b.dataset.manual){const t=b.dataset.manual;if(state.manual.includes(t))state.manual=state.manual.filter(x=>x!==t);else if(state.manual.length<3)state.manual.push(t);else return notice('最多选择3种兴趣类型');persist();renderAssessment();return}
+ if(b.dataset.clearManual){state.manual=[];persist();renderAssessment();return}
+ if(b.dataset.history){const rec=[...state.history,...legacyResults()].find(x=>x.id===b.dataset.history);if(rec){state.result=rec.result;state.manual=[];persist();assessmentMode='result';renderAssessment()}return}
+ if(b.dataset.deleteHistory){state.history=state.history.filter(x=>x.id!==b.dataset.deleteHistory);persist();renderAssessment();return}
+});
+$('#main').addEventListener('change',e=>{if(e.target.matches('[data-subject]')){const s=e.target.dataset.subject;if(e.target.checked&&!state.subjects.includes(s))state.subjects.push(s);else state.subjects=state.subjects.filter(x=>x!==s);persist();$('#selectedSubjectCount').textContent=state.subjects.length+' / 7';$$('#subjectOptions label').forEach(label=>label.classList.toggle('on',state.subjects.includes(label.querySelector('input').dataset.subject)));const rec=rankedCatalog().slice(0,5);$('#subjectSummary').textContent=state.subjects.length?`目前选择 ${state.subjects.join('、')}。下列专业是依据科目关联进行探索排序；灰色标注的缺少核心科目仅为进一步核对的提醒。`:'建议先选择已学习或计划学习的科目。排序还会结合你已经完成的RIASEC测评。';$('#subjectRecommended').innerHTML=state.subjects.length?rec.map(m=>`<button data-detail="${esc(m.id)}">${esc(m.zh)} <span>${esc(m.match.missingCore.length?'待核对：'+m.match.missingCore.join('、'):'已覆盖映射中的核心科目')}</span></button>`).join(''):'<p class="micro">目前尚无课程条件。</p>';return}});
+$('#clearSubjects').onclick=()=>{state.subjects=[];persist();renderSubjects();notice('已清空选课')};
+$('#searchMajor').addEventListener('input',renderExplore);$('#categoryFilter').addEventListener('change',renderExplore);$('#sortFilter').addEventListener('change',renderExplore);
+$('#resetExplore').onclick=()=>{$('#searchMajor').value='';$('#categoryFilter').value='';$('#sortFilter').value='fit';renderExplore()};
+$('#schoolFilter').onchange=renderAdmissions;$('#admissionSearch').oninput=renderAdmissions;
+$('#majorDialog').addEventListener('click',e=>{const b=e.target.closest('[data-close-dialog],[data-dialog-compare],[data-go],[data-detail]');if(!b)return;if(b.dataset.closeDialog){$('#majorDialog').close();return}if(b.dataset.dialogCompare){toggleCompare(b.dataset.dialogCompare);return}if(b.dataset.detail){openDetail(b.dataset.detail);return}if(b.dataset.go){$('#majorDialog').close();show(b.dataset.go)}});
+$('#majorDialog').addEventListener('click',e=>{if(e.target===$('#majorDialog'))$('#majorDialog').close()});
+$('#printReport').onclick=()=>{renderReport();window.print()};$('#downloadReport').onclick=downloadStandaloneReport;
+$('#exportData').onclick=()=>download('MAJOR-FUTURES-V5-我的探索资料.json',JSON.stringify({format:'major-futures-v5-beta',exportedAt:new Date().toISOString(),data:state},null,2),'application/json;charset=utf-8');
+$('#importTrigger').onclick=()=>$('#importFile').click();$('#importFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(obj.format!=='major-futures-v5-beta'||!obj.data)throw Error('格式不符');if(!confirm('导入将替换本机当前V5资料。确定继续吗？'))return;const d=obj.data;state={subjects:Array.isArray(d.subjects)?d.subjects.filter(x=>SUBJECTS.includes(x)):[],compare:Array.isArray(d.compare)?d.compare.filter(x=>byId.has(x)).slice(0,3):[],answers:Array.isArray(d.answers)&&d.answers.length===60?d.answers.map(x=>x===null||[0,1,2,3,4].includes(x)?x:null):Array(60).fill(null),assessmentPage:Math.max(0,Math.min(5,d.assessmentPage||0)),result:d.result?.code?d.result:null,manual:Array.isArray(d.manual)?d.manual.filter(x=>T[x]).slice(0,3):[],history:Array.isArray(d.history)?d.history.filter(x=>x?.result?.code).slice(0,50):[],lang:d.lang==='en'?'en':'zh'};persist();show('home');notice('个人资料导入完成')}catch(err){alert('导入失败：请使用V5 Beta导出的有效JSON文件。')}finally{e.target.value=''}});
+$('#resetAll').onclick=resetAll;
+if(C.length!==100||CAREERS.length!==28||QUESTIONS.length!==60||CROSSWALK.length!==28)console.error('Incomplete source dataset',C.length,CAREERS.length,QUESTIONS.length,CROSSWALK.length);
+show(pageId(),false);$('#compareBadge').textContent=String(state.compare.length);const atlasStatus=$('#atlasStatus');if(atlasStatus){atlasStatus.textContent=FULL.length===100?'100个完整专业档案已载入（原站长文、薪酬、课程及活动）':'完整数据尚未生成：请在GitHub Pages启用Actions部署';atlasStatus.classList.toggle('atlas-pending',FULL.length!==100)}
 })();

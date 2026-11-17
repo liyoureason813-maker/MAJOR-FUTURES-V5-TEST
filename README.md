@@ -1,56 +1,56 @@
-# MAJOR FUTURES V5.0 Alpha — GitHub Pages 测试部署版
+# MAJOR FUTURES V5.0 — 百大专业全量内容融合测试版
 
-测试站专用；不替换 MAJOR-FUTURES V4.2.2 和 global-majors-guide。
+版本日期：2026-11-17。**本包用于独立测试仓库，不得覆盖两个正式站。**
 
-## 1. 在 GitHub 创建独立测试仓库
+## 已完成的原生功能
 
-访问 https://github.com/new
-- Owner: `liyoureason813-maker`
-- Repository name: `MAJOR-FUTURES-V5-TEST`
-- Visibility: Public（GitHub Free 下用于 GitHub Pages）
-- Add a README file: 可以不勾选，因为部署包中已包含 README.md。
-- 点击 Create repository。
+- 100专业搜索、11学科类别、RIASEC兴趣类型、A-Level 7科探索匹配；60题RIASEC测评、历史与进度；最多3专业对比、个人报告及PDF打印 / HTML报告 / JSON备份。
+- 28个重点专业提供9组方向/专业、27条岗位示例、学历与AI任务影响的原生补充。
+- **100专业全部剩余内容的自动迁移**：运行 `tools/build-atlas.mjs` 从你自己维护的 `global-majors-guide` 已编译发布数据中精确提取 100 条完整专业介绍、适合人群、A-Level科目对应理由、MBTI偏好示例、职业出口、前沿方向、职业场景长文、申请准备建议、活动、88条公开课信息（各专业复用）、相关专业、原版中国薪酬阶段区间、原图鉴页码、UCAS/BigFuture/QS外部查询资源。构建生成 `data/atlas-full.js` 和 `data/atlas-full.json`，部署后用户端只从 **V5测试站自己的目录**读取专业数据，不需要浏览器请求旧网站、运行旧React应用或使用iframe。
+- 2027 Oxford/UCL/LSE课程级入学考试速查；旧站岗位/学历说明与申请规则仍有资料年份及覆盖边界，需要持续维护。
 
-## 2. 上传文件
+## 最重要：部署方式改为 GitHub Actions
 
-解压本 ZIP，进入解压后的 `v5-github-pages-ready` 文件夹，选中内部所有文件及 `data` 文件夹，而不是上传 ZIP 本身、也不要在仓库根目录额外套一层文件夹。
+本包里的100专业完整档案数据在**GitHub Pages的构建步骤**从原作者的公开仓库自动生成。上传ZIP时 **`data/atlas-full.js`尚未存在是正常的**，无需自行创建，也不要用空文件代替。
 
-在 GitHub 仓库内点 Add file → Upload files；把上述文件/文件夹拖进去，Commit changes 保存至 `main`。
+1. 解压ZIP，打开 `MAJOR_FUTURES_V5_COMPLETE` 文件夹，将**里面所有文件和子目录**上传到 `MAJOR-FUTURES-V5-TEST` 的 `main` 根目录。必须包括隐藏目录 `.github/workflows/deploy.yml`。GitHub网页版上传文件时请确认这个隐藏目录完整保留；如果网页上传工具没有保留，可以在GitHub网页新建 `.github/workflows/deploy.yml` 并粘贴本包内容。
+2. 进入 `Settings → Pages → Build and deployment → Source`，从 `Deploy from a branch` 切换至 **`GitHub Actions`**，保存。
+3. 打开 `Actions`，找到 **Build and deploy complete V5 major atlas**。首次运行可手动点 `Run workflow`；等待 `build`、`deploy` 均变绿色。
+4. 打开 `https://liyoureason813-maker.github.io/MAJOR-FUTURES-V5-TEST/`，强制刷新。首页**必须**显示：`100个完整专业档案已载入`，否则代表尚未成功生成并部署完整数据。
+5. 抽检：会计学（课程/薪酬/长文）；心理学（研究及职业场景）；电子电气工程（岗位）；纯艺术（活动）；3专业比较的中国薪酬行；60题测评全流程；PDF打印。
 
-仓库根目录至少应看到：
-- index.html
-- app.js
-- styles.css
-- data/global-majors-data.js
-- data/global-majors.json
-- data/crosswalk-28-to-100.json
-- README.md
-- .nojekyll （隐藏文件，辅助 GitHub Pages）
+> 若 GitHub Actions 无法部署，先打开失败步骤日志。`build-atlas.mjs` 对原站脚本的 Git blob SHA 进行严格校验：若原站以后重新编译改变了文件，需要审查新数据格式并更新提取脚本/校验SHA，而不能悄悄迁移不同版本内容。
 
-## 3. 启用 GitHub Pages
+## 手动在电脑上生成完整数据（可用于以后改回branch部署）
 
-仓库 Settings → Pages → Build and deployment
-- Source: Deploy from a branch
-- Branch: `main`
-- Folder: `/(root)`
-- Save
+如本地有 Node.js 22+，并已下载原仓库编译文件到电脑，可执行：
 
-然后查看 Actions 中 pages build and deployment 是否成功。
+```bash
+node tools/build-atlas.mjs --source /path/to/index-ZjQvt1sT.js
+```
 
-## 4. 访问预期地址
+它会生成 `data/atlas-full.js` 和 `data/atlas-full.json`。**把这两个生成文件上传到测试仓库**后，即可在 `Deploy from a branch` 模式下工作，无需构建工作流。脚本不会改写旧仓库。
 
-https://liyoureason813-maker.github.io/MAJOR-FUTURES-V5-TEST/
+## 注意事项
 
-该地址只在新仓库创建并部署成功后可访问。
+- 此版本的“迁移”指**将原发布站已有资料完整复制为本地结构化数据并原生渲染**；不是重新撰写、实时核验100个专业或重新建立工资统计。引用原站内容及其原有来源，不自动补充新事实。
+- 中国薪酬为**职业簇规划参考区间**，不是专业毕业生工资样本统计、薪资承诺或职业收入预测。仍需逐地区、执照、行业核验。
+- 原站的部分活动、课程及第三方网址可能失效或年份过时，界面已标明未逐项核验。若用户需要最新要求，以大学官网为准。
+- 28专业岗位资料与100专业长文数据年份不同，不能宣称按O*NET31.0逐项更新完毕。
+- 原图鉴正文中文为主；RIASEC测评双语；尚未新增100篇文章的英文翻译。
+- 仅浏览器本地保存测评数据，不自动跨设备同步；导出的JSON请妥善保管。
 
-## 5. 测试清单
+## 测试 / 数据结构
 
-- [ ] 100专业目录可加载、搜索、筛选
-- [ ] 手动RIASEC与A-Level科目对专业排序的影响
-- [ ] 三专业对比
-- [ ] 从功能中心打开原MAJOR FUTURES（60题、PDF、历史记录）
-- [ ] 从功能中心打开原百大专业指南（详情、薪酬、原专业对比）
-- [ ] 同浏览器/同源下的测评历史读取
-- [ ] 手机与电脑布局
+| 文件 | 作用 |
+|---|---|
+| `data/catalog.js` | 100专业索引、RIASEC、科目映射 |
+| `data/careers.js` | 28专业岗位/学历/AI深度数据 |
+| `data/questions.js` | 60道RIASEC原题 |
+| `data/crosswalk.js` | 28→100专业映射 |
+| `tools/build-atlas.mjs` | 通过公开源码提取100篇完整数据，校验原始SHA与记录数 |
+| `data/atlas-full.js` | GitHub Actions构建后生成的完整结构化资料，浏览器直接加载 |
+| `data/atlas-full.json` | GitHub Actions构建后生成的可检视备份 |
+| `.github/workflows/deploy.yml` | GitHub Pages自动构建发布工作流 |
 
-注意：这只是融合 Alpha；原网站功能通过链接/嵌入提供。没有把React完整专业详情和原网站全部功能重构成一个独立程序。
+原站来源：[MAJOR FUTURES](https://github.com/liyoureason813-maker/MAJOR-FUTURES)、[海外百大专业指南](https://github.com/liyoureason813-maker/global-majors-guide)。
