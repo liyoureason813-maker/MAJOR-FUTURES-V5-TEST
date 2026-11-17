@@ -8,3 +8,15 @@
 .full-atlas{margin-top:24px}.atlas-heading{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.atlas-heading small,.micro{color:var(--muted)}.long-copy{line-height:1.95;white-space:pre-line;overflow-wrap:anywhere}.atlas-list{padding-left:23px;line-height:1.9;overflow-wrap:anywhere}.atlas-list li{margin-bottom:7px}.atlas-dual{display:grid;grid-template-columns:1fr 1fr;gap:24px}.atlas-dual>div{min-width:0}.resource-list{display:grid;gap:10px}.resource-link{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:14px;text-decoration:none;background:var(--surface2);overflow-wrap:anywhere}.resource-link:hover,.related-btn:hover{border-color:var(--accent)}.resource-link b{font-size:14px}.resource-link small{font-size:11px;color:var(--muted)}.resource-link span{font-size:12px;line-height:1.65;color:var(--muted)}.related-majors{display:flex;flex-wrap:wrap;gap:8px}.related-label{border:1px solid var(--line);border-radius:12px;padding:8px;font-size:12px}.resource-buttons{display:flex;flex-wrap:wrap;gap:9px}.resource-buttons a{border:1px solid var(--line);padding:10px 14px;border-radius:8px;font-size:13px}.salary-detail-row{display:grid;grid-template-columns:150px 1fr 120px;align-items:center;gap:12px;margin:12px 0;font-size:12px}.salary-range{height:12px;background:#e5e9eb;border-radius:8px;position:relative;overflow:hidden}.salary-range i{display:block;position:absolute;top:0;bottom:0;background:#659a82;border-radius:8px}.salary-detail-row b{font-size:13px}.missing-atlas{border:2px dashed #ae9750}
 @media(max-width:760px){.atlas-dual{grid-template-columns:1fr}.salary-detail-row{grid-template-columns:110px 1fr 85px;gap:7px;font-size:10px}.salary-detail-row b{font-size:11px}.resource-link{padding:12px}}
 @media print{.resource-link{break-inside:avoid}}
+
+/* V5.1 accessibility, rationale and reading refinement */
+.skip-link{position:fixed;left:14px;top:-100px;z-index:110;padding:12px 18px;background:#fff;color:#123d45;border-radius:10px;box-shadow:0 4px 15px #0018;font-weight:800}
+.skip-link:focus{top:10px}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #d69b41;outline-offset:3px}
+.match-reason{background:#f0f7f4;border-left:3px solid #4f9b81;padding:10px!important;border-radius:6px;font-size:12px!important;line-height:1.65!important}
+.major-card .match-reason{color:#466273}
+.result-main .code{overflow-wrap:anywhere}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+@media(max-width:700px){.report-paper{padding:22px 16px}.report-grid{grid-template-columns:1fr}.result-related{grid-template-columns:1fr}.toolbar{flex-wrap:wrap}}
+
+.status-badge.not-required{background:#edf3f6;color:#465b69;border:1px solid #b8c8d2}

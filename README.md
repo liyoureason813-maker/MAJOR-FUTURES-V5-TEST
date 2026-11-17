@@ -1,56 +1,47 @@
-# MAJOR FUTURES V5.0 — 百大专业全量内容融合测试版
+# MAJOR FUTURES V5.1 · 准确性、解释与学生隐私修复版
 
-版本日期：2026-11-17。**本包用于独立测试仓库，不得覆盖两个正式站。**
+版本日期：2026-11-17。用于 **MAJOR-FUTURES-V5-TEST 测试站**；不会影响已有两个正式网站。继承原 V5 的100篇专业资料数据构建、60题测评、A-Level探索匹配和28专业职业分析。
 
-## 已完成的原生功能
+## 本版变更（相对 V5.0 Complete）
 
-- 100专业搜索、11学科类别、RIASEC兴趣类型、A-Level 7科探索匹配；60题RIASEC测评、历史与进度；最多3专业对比、个人报告及PDF打印 / HTML报告 / JSON备份。
-- 28个重点专业提供9组方向/专业、27条岗位示例、学历与AI任务影响的原生补充。
-- **100专业全部剩余内容的自动迁移**：运行 `tools/build-atlas.mjs` 从你自己维护的 `global-majors-guide` 已编译发布数据中精确提取 100 条完整专业介绍、适合人群、A-Level科目对应理由、MBTI偏好示例、职业出口、前沿方向、职业场景长文、申请准备建议、活动、88条公开课信息（各专业复用）、相关专业、原版中国薪酬阶段区间、原图鉴页码、UCAS/BigFuture/QS外部查询资源。构建生成 `data/atlas-full.js` 和 `data/atlas-full.json`，部署后用户端只从 **V5测试站自己的目录**读取专业数据，不需要浏览器请求旧网站、运行旧React应用或使用iframe。
-- 2027 Oxford/UCL/LSE课程级入学考试速查；旧站岗位/学历说明与申请规则仍有资料年份及覆盖边界，需要持续维护。
+1. **测评不再强行制造三字母代码**：若六类型最高最低分差小于4分，或第三、第四名出现同分，页面会显示“三字母待确认”并提供原因；每类分数仍然显示。该阈值仅是避免误导的展示规则，**不是经过常模验证的心理测量标准**。旧版导入或历史测评在展示时也重新评估分数结构，不会修改原始记录。
+2. **没有个人信息就不生成伪推荐**：未有有效RIASEC代码、也没填写A-Level时，个人报告不再硬列6个“零分推荐”，100专业目录仍可正常浏览。
+3. **修复报告HTML**：`**并非...**` 不再原样显示，替换为正确的HTML加粗提示。可继续打印PDF、下载独立HTML和JSON备份。
+4. **推荐理由可以解释**：100专业卡片、详情页、三专业对比和个人报告，均展示兴趣代码重合、已选的相关A-Level科目、需核对的核心探索科目；不把站内积分解释为匹配概率或大学录取资格。
+5. **职业关系映射**：将原有 `equivalent`（基本对应）与 `exact` 一同归入直接/基本对应，其他保留“相关方向”警示（如人工智能与计算机科学不能当成同一个本科专业）。
+6. **2027英国本科入学考试**：依据 Oxford、UCL、LSE 官方页面，将速查表拆为41条具体课程/课程组，区分“必考”“建议参加”与UCL 2027已明确取消的若干附加测试。核验日期2026-11-17，用户申请前应再次核对官方页面。
+7. **改善无障碍和移动端操作**：菜单`aria-expanded`状态、Esc关菜单、跳到正文链接、键盘焦点、尊重减少动画偏好、部分手机布局改进；“中/EN”按钮明确注明仅切换测评题目语言，不是假称全站双语。
+8. **公用电脑隐私**：可以明确选择清除V5与旧版V4同源历史；同时保留单独删除旧版V4历史的入口。清除不可逆，须先导出必要数据。
 
-## 最重要：部署方式改为 GitHub Actions
+## 最简部署方式（推荐）
 
-本包里的100专业完整档案数据在**GitHub Pages的构建步骤**从原作者的公开仓库自动生成。上传ZIP时 **`data/atlas-full.js`尚未存在是正常的**，无需自行创建，也不要用空文件代替。
+在本仓库 [`MAJOR-FUTURES-V5-TEST`](https://github.com/liyoureason813-maker/MAJOR-FUTURES-V5-TEST) 的 `main` 根目录，**只替换四个文件**：
 
-1. 解压ZIP，打开 `MAJOR_FUTURES_V5_COMPLETE` 文件夹，将**里面所有文件和子目录**上传到 `MAJOR-FUTURES-V5-TEST` 的 `main` 根目录。必须包括隐藏目录 `.github/workflows/deploy.yml`。GitHub网页版上传文件时请确认这个隐藏目录完整保留；如果网页上传工具没有保留，可以在GitHub网页新建 `.github/workflows/deploy.yml` 并粘贴本包内容。
-2. 进入 `Settings → Pages → Build and deployment → Source`，从 `Deploy from a branch` 切换至 **`GitHub Actions`**，保存。
-3. 打开 `Actions`，找到 **Build and deploy complete V5 major atlas**。首次运行可手动点 `Run workflow`；等待 `build`、`deploy` 均变绿色。
-4. 打开 `https://liyoureason813-maker.github.io/MAJOR-FUTURES-V5-TEST/`，强制刷新。首页**必须**显示：`100个完整专业档案已载入`，否则代表尚未成功生成并部署完整数据。
-5. 抽检：会计学（课程/薪酬/长文）；心理学（研究及职业场景）；电子电气工程（岗位）；纯艺术（活动）；3专业比较的中国薪酬行；60题测评全流程；PDF打印。
+- `index.html`
+- `app.js`
+- `styles.css`
+- `README.md`
 
-> 若 GitHub Actions 无法部署，先打开失败步骤日志。`build-atlas.mjs` 对原站脚本的 Git blob SHA 进行严格校验：若原站以后重新编译改变了文件，需要审查新数据格式并更新提取脚本/校验SHA，而不能悄悄迁移不同版本内容。
+**无需重新上传 `data/`、`tools/` 或 `.github/workflows/deploy.yml`；原有 GitHub Actions 会在 `main` 提交后自动生成100专业完整数据并部署。**
 
-## 手动在电脑上生成完整数据（可用于以后改回branch部署）
+在 Settings → Pages 确保 Source = GitHub Actions。检查 `Actions → Build and deploy complete V5 major atlas`，需构建成功后再打开 [测试站](https://liyoureason813-maker.github.io/MAJOR-FUTURES-V5-TEST/) 强制刷新。
 
-如本地有 Node.js 22+，并已下载原仓库编译文件到电脑，可执行：
+## 建议验收
 
-```bash
-node tools/build-atlas.mjs --source /path/to/index-ZjQvt1sT.js
-```
+- 新访客无兴趣和选课：报告不应显示任何0分“推荐专业”。
+- 60题全部选0或全部选4：不得返回强制生成的RIA，而是显示三字母待确认。
+- 60题R=4、I=3、A=2、S=1、E/C=0：应返回RIA（依据原题类型分配，不是前10题）。
+- 只在第三与第四分数同分时：不能强制选择第三名。
+- 在课程中选数学：100张专业卡应显示推荐理由，详情可展开。
+- 物理／应用物理对应关系不再误标为仅相关专业。
+- 可比较3个专业；报告可下载HTML与JSON；手机菜单可用Esc关闭。
+- 2027申请页 Oxford、UCL、LSE 总计41条，并且相关记录可打开大学官方说明页面。
+- 100篇完整专业资料仍显示“100个完整专业档案已载入”。
 
-它会生成 `data/atlas-full.js` 和 `data/atlas-full.json`。**把这两个生成文件上传到测试仓库**后，即可在 `Deploy from a branch` 模式下工作，无需构建工作流。脚本不会改写旧仓库。
+## 数据边界与后续事项
 
-## 注意事项
-
-- 此版本的“迁移”指**将原发布站已有资料完整复制为本地结构化数据并原生渲染**；不是重新撰写、实时核验100个专业或重新建立工资统计。引用原站内容及其原有来源，不自动补充新事实。
-- 中国薪酬为**职业簇规划参考区间**，不是专业毕业生工资样本统计、薪资承诺或职业收入预测。仍需逐地区、执照、行业核验。
-- 原站的部分活动、课程及第三方网址可能失效或年份过时，界面已标明未逐项核验。若用户需要最新要求，以大学官网为准。
-- 28专业岗位资料与100专业长文数据年份不同，不能宣称按O*NET31.0逐项更新完毕。
-- 原图鉴正文中文为主；RIASEC测评双语；尚未新增100篇文章的英文翻译。
-- 仅浏览器本地保存测评数据，不自动跨设备同步；导出的JSON请妥善保管。
-
-## 测试 / 数据结构
-
-| 文件 | 作用 |
-|---|---|
-| `data/catalog.js` | 100专业索引、RIASEC、科目映射 |
-| `data/careers.js` | 28专业岗位/学历/AI深度数据 |
-| `data/questions.js` | 60道RIASEC原题 |
-| `data/crosswalk.js` | 28→100专业映射 |
-| `tools/build-atlas.mjs` | 通过公开源码提取100篇完整数据，校验原始SHA与记录数 |
-| `data/atlas-full.js` | GitHub Actions构建后生成的完整结构化资料，浏览器直接加载 |
-| `data/atlas-full.json` | GitHub Actions构建后生成的可检视备份 |
-| `.github/workflows/deploy.yml` | GitHub Pages自动构建发布工作流 |
-
-原站来源：[MAJOR FUTURES](https://github.com/liyoureason813-maker/MAJOR-FUTURES)、[海外百大专业指南](https://github.com/liyoureason813-maker/global-majors-guide)。
+- 本次**没有**重新验证所有100篇内容与外部资源链接，也没有重新估计薪酬、岗位AI影响或逐条映射O*NET 31.0。
+- 100专业资料来自你本人另一站的历史发布数据；薪酬是职业簇规划区间而非调查中位数。
+- 当前匹配是可解释的自定义探索启发式，不能用作测量心理特质的临床效度、专业申请资格或预测录取概率。
+- 28重点专业以外的72专业仍没有原版同样粒度的AI岗位深度地图；现有100专业长文仍以中文为主。分享链接、G10–G12交互式任务清单和全站英文本地化属于后续独立开发，不在此修复包中。
+- 入学测试规则可能调整：来源为[Oxford](https://www.ox.ac.uk/admissions/undergraduate/applying/guide-for-applicants/admissions-tests)、[UCL](https://www.ucl.ac.uk/study/prospective-students/school-teachers-and-counsellors/tests-tasks-and-interviews)、[LSE](https://www.lse.ac.uk/study-at-lse/Undergraduate/Prospective-Students/How-to-Apply/Test-of-Mathematics-for-University-Admission-TMUA)，最后核对日期2026-11-17。
