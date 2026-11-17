@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="MAJOR FUTURES V5.0 星海融致国际课程专业与升学规划融合测试工作台：兴趣、A-Level、百大专业、职业发展、申请准备。">
+<meta name="theme-color" content="#0c1521">
+<title>MAJOR FUTURES V5.0 Alpha | 星海融致专业与升学规划工作台</title>
+<link rel="stylesheet" href="./styles.css?v=5.0.0-a1">
+</head>
+<body>
+<div class="shell">
+<header class="topbar"><a href="#home" class="brand" data-nav="home"><span class="logo">M<span>✦</span>F</span><span><strong>MAJOR FUTURES</strong><small>星海融致专业与升学规划系统</small></span></a><div class="top-right"><span class="stage">V5.0 · ALPHA / 本地测试</span><button class="top-button" id="syncButton" title="重新读取本机的RIASEC测评历史">↻ 同步测评</button></div></header>
+<aside class="sidebar" aria-label="平台功能导航">
+ <div class="side-head">YOUR FUTURE, MAPPED.</div>
+ <button class="navbtn active" data-page="home"><b>01</b> 规划首页</button>
+ <button class="navbtn" data-page="profile"><b>02</b> 我的兴趣与选课</button>
+ <button class="navbtn" data-page="catalog"><b>03</b> 百大专业地图</button>
+ <button class="navbtn" data-page="compare"><b>04</b> 三专业对比</button>
+ <button class="navbtn" data-page="workbench"><b>05</b> 原系统功能中心</button>
+ <button class="navbtn" data-page="sources"><b>06</b> 数据说明与升级路线</button>
+ <div class="side-footer">XINGHAI · FUSIONVISION<br>CAREER & UNIVERSITY PLANNING</div>
+</aside>
+<main id="main">
+<section class="page visible" id="page-home">
+ <div class="hero"><div class="eyebrow"><span class="live-dot"></span> AN INTEGRATED CAREER EXPLORATION WORKSPACE</div><h1>一个平台，<br><em>探索更清晰的未来。</em></h1><p>将两套原有系统连接为统一的探索入口。先认识自己的兴趣与课程背景，再对照100个海外本科专业，进入完整专业档案与职业路径。</p><div class="hero-actions"><button class="primary" data-jump="profile">开始个人规划 <span>↗</span></button><button class="ghost" data-jump="catalog">浏览100个专业</button></div><div class="hero-numbers"><div><strong>100</strong><span>专业目录</span></div><div><strong>60</strong><span>RIASEC题目</span></div><div><strong>28</strong><span>深度职业专业</span></div><div><strong>2</strong><span>原网站能力中心</span></div></div></div>
+ <div class="section-title"><div><span>YOUR JOURNEY</span><h2>从兴趣到行动的四步</h2></div><p>结果是探索线索，不是大学录取预测。</p></div>
+ <div class="journey"><button data-jump="profile"><span>01</span><strong>发现兴趣</strong><small>读取60题RIASEC结果或手动选择兴趣倾向</small><i>↗</i></button><button data-jump="profile"><span>02</span><strong>整理选课</strong><small>记录A-Level选课意向，标注课程匹配提示</small><i>↗</i></button><button data-jump="catalog"><span>03</span><strong>筛选专业</strong><small>根据100专业的RIASEC与科目映射进行探索</small><i>↗</i></button><button data-jump="compare"><span>04</span><strong>比较与深挖</strong><small>专业并排比较，进入原网站完整课程与职业档案</small><i>↗</i></button></div>
+ <div class="note-grid"><article class="info-card"><span class="chip">CONNECTED</span><h3>已有测评历史</h3><p id="homeHistory">检查中…</p><button class="linkbtn" data-jump="profile">查看个人兴趣 →</button></article><article class="info-card"><span class="chip">CAREER SIGNALS</span><h3>原有职业路径完整保留</h3><p>原MAJOR FUTURES的AI职业影响、学历提示、PDF与60题测评仍可从功能中心访问。</p><button class="linkbtn" data-open="major">打开职业系统 →</button></article><article class="info-card"><span class="chip">GLOBAL ATLAS</span><h3>100专业完整档案</h3><p>百大专业指南的详细介绍、中国薪酬、院校与课程资源可在功能中心完整使用。</p><button class="linkbtn" data-open="global">打开完整图鉴 →</button></article></div>
+</section>
+<section class="page" id="page-profile">
+ <div class="page-eyebrow">01 / PERSONAL PROFILE</div><h1>我的兴趣与课程背景</h1><p class="lead">如果你已经在MAJOR FUTURES完成测评，点击“同步测评”即可读取当前浏览器的保存结果。也可以手动输入三个兴趣代码，先开始探索。</p>
+ <div class="two-col"><article class="panel"><h2>霍兰德 RIASEC</h2><div id="assessmentStatus" class="status">正在读取本机测评记录…</div><div class="profile-score"><span>我的三字母代码</span><strong id="myCode">— — —</strong></div><div class="buttons"><button class="primary" data-open="major">进入60题测评 ↗</button><button class="outline" id="readHistory">同步测评历史</button></div><p class="minor">没有历史记录时，可点击以下三种兴趣类型做探索性模拟；这不是正式测评结果。</p><div class="interest-picker" id="interestPicker"></div><button class="tiny" id="clearInterest">清除兴趣条件</button></article>
+ <article class="panel"><h2>我的 A-Level 科目</h2><p class="hint">选择已经学习或计划学习的科目（可多选）。绿色标为核心、黄色为推荐、灰色为桥接，均来自百大专业指南的课程映射。</p><div class="subject-picks" id="subjectPicks"></div><div class="profile-summary"><span id="subjectCount">尚未选择科目</span><button class="tiny" id="clearSubjects">清除选课</button></div><p class="minor">重要：这里的“核心/推荐”属于探索提示，不能代替任何大学当年正式的A-Level录取要求。</p><div class="buttons"><button class="primary" data-jump="catalog">根据条件查看专业 ↗</button><button class="outline" data-open="major">打开原课程匹配器</button></div></article></div>
+ <div class="note"><strong>个人数据提示</strong>：这份V5工作台只在本机浏览器保存兴趣代码与选课。RIASEC历史仍由原MAJOR FUTURES保存；不同电脑、不同浏览器不会自动同步。两个GitHub Pages项目若使用同一 <code>liyoureason813-maker.github.io</code> 主机名，可在同源条件下读取测评记录。</div>
+</section>
+<section class="page" id="page-catalog">
+ <div class="page-eyebrow">02 / MAJOR DIRECTORY</div><h1>100个专业，一套探索视角</h1><p class="lead">来源于海外百大专业指南正式发布包中的100专业目录。按兴趣倾向与选课条件进行初步排序，查看更详细资料请进入原图鉴。</p>
+ <div class="searchbar"><input id="majorSearch" type="search" placeholder="搜索专业中文名 / English / 分类..." aria-label="搜索专业"><select id="categorySelect" aria-label="按学科分类"><option value="">全部学科类别</option></select><select id="sortSelect" aria-label="排序"><option value="relevance">智能探索排序</option><option value="name">中文名称</option><option value="category">按类别</option></select></div>
+ <div class="catalog-help" id="catalogHelp"></div><div class="catalog-head"><span id="catalogCount">100个专业</span><button class="tiny" id="resetCatalog">重置筛选</button></div><div class="major-grid" id="majorGrid"></div>
+</section>
+<section class="page" id="page-compare"><div class="page-eyebrow">03 / COMPARE</div><h1>把专业放在一起看</h1><p class="lead">从专业目录添加最多3个专业，可以对照RIASEC提示、课程映射和当前兴趣/选课背景。进一步的完整薪酬、前沿方向和申请准备在原图鉴中查看。</p><div class="compare-area" id="compareArea"></div><button class="outline" data-jump="catalog">返回专业目录，添加对比专业 →</button></section>
+<section class="page" id="page-workbench"><div class="page-eyebrow">04 / ORIGINAL CAPABILITIES</div><h1>两套原有功能，统一工作台打开</h1><p class="lead">这里直接连接已经正式发布的两套网站，保留其原有全部交互功能。与V5专业筛选共享同一个浏览器入口。</p><div class="app-switch"><button id="appMajor" class="active" data-app="major">职业兴趣 · AI职业地图 · A-Level</button><button id="appGlobal" data-app="global">100专业完整档案 · 薪酬 · 专业对比</button></div><div class="app-controls"><span id="appLocation">MAJOR FUTURES V4.2.2</span><div><a id="externalSite" href="https://liyoureason813-maker.github.io/MAJOR-FUTURES/" target="_blank" rel="noopener">独立标签页打开 ↗</a><button id="reloadApp">刷新模块 ↻</button></div></div><div id="selectedMajorHint" class="selected-major-hint" hidden><span id="selectedMajorText"></span><button id="copyMajorName" class="tiny">复制专业名称</button></div><div id="embedNotice" class="embed-notice" hidden>若浏览器限制跨站嵌入，请使用上方“独立标签页打开”，原网站功能仍可正常访问。</div><iframe id="legacyFrame" title="MAJOR FUTURES 原网站功能" src="about:blank" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe><p class="minor">本测试版的工作台和原网站并存。正式深度融合需将百大专业指南的React原始工程及详细数据拆分为可维护的独立模块。</p></section>
+<section class="page" id="page-sources"><div class="page-eyebrow">05 / SOURCE & ROADMAP</div><h1>数据边界与后续计划</h1><div class="source-grid"><article class="panel"><h2>已经实现 · V5.0 Alpha</h2><p>统一门户；百大专业基础数据抽取；RIASEC与A-Level联合探索排序；3专业比较；读取原系统本机测评历史；两个原网站的完整功能入口。</p></article><article class="panel"><h2>下一阶段 · 深度融合</h2><p>获得原始React工程后，统一100专业的详细数据结构、职业任务与学历提示、PDF报告、大学申请年份规则、中英文界面和导航路由，不再依赖独立嵌入网站。</p></article><article class="panel"><h2>来源与方法</h2><p>100专业、RIASEC映射和科目提示：<a href="https://github.com/liyoureason813-maker/global-majors-guide" target="_blank" rel="noopener">global-majors-guide GitHub仓库</a>编译后的发布代码。60题测评及原课程匹配：<a href="https://github.com/liyoureason813-maker/MAJOR-FUTURES" target="_blank" rel="noopener">MAJOR-FUTURES GitHub仓库</a>。本工作台的排序属于自定义探索启发式，并非任何官方验证的适配概率。</p></article><article class="panel"><h2>当前缺失的文件</h2><p>百大专业指南的 <code>package.json</code>、<code>src/App.tsx</code>、<code>src/main.tsx</code>、原始专业数据文件等尚未在发布仓库发现。若有早期本地项目，请优先提供整个源代码ZIP（不需 <code>node_modules</code>）。</p></article></div><div class="note">工作台使用的100专业数据仅包括：专业名称、分类、RIASEC代码和A-Level科目级别。原图鉴中的完整简介、课程解释、薪酬及延伸资源仍由原网站提供；本测试版不会伪称已完成全面迁移。</div></section>
+<footer><span>MAJOR FUTURES · V5.0 ALPHA</span><span>星海实验高级中学融致国际课程项目 · 本地测试版本</span></footer>
+</main>
+</div>
+<div id="toast" class="toast" aria-live="polite"></div>
+<script src="./data/global-majors-data.js?v=5.0.0-a1"></script><script src="./app.js?v=5.0.0-a1"></script>
+</body></html>

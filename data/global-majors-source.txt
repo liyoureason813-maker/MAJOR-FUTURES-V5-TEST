@@ -1,0 +1,100 @@
+accounting|会计学|Accounting|商业与管理|C,E,I|数学!,经济+,商务+
+actuarial-science|精算学|Actuarial Science|数学与自然科学|I,C,E|数学!,高数!,经济+
+advertising|广告学|Advertising|传媒与创意|A,E,S|商务!,经济+,数学~
+aerospace-engineering|航空航天工程|Aerospace Engineering|工程与制造|I,R,C|数学!,高数!,物理!
+agricultural-science|农业科学|Agricultural Science|生命科学|R,I,E|生物!,化学+,数学+
+animal-science|动物科学|Animal Science|生命科学|R,I,S|生物!,化学+,数学+
+anthropology|人类学|Anthropology|社会科学|I,S,A|经济+,生物+,数学~
+archaeology|考古学|Archaeology|人文与语言|I,R,A|生物+,化学+,数学~
+architecture|建筑学|Architecture|建筑与设计|A,R,I|数学!,物理+,商务~
+art-history|艺术史|Art History|人文与语言|A,I,S|经济+,商务~,数学~
+arts-administration|艺术管理|Arts Administration|商业与管理|E,A,S|商务!,经济+,数学~
+asian-studies|亚洲研究／东亚研究|Asian / East Asian Studies|人文与语言|I,A,S|经济+,商务+,数学~
+astronomy-astrophysics|天文学与天体物理学|Astronomy & Astrophysics|数学与自然科学|I,R,C|数学!,高数!,物理!
+biochemistry-molecular-biology|生物化学与分子生物学|Biochemistry & Molecular Biology|生命科学|I,R,C|化学!,生物!,数学+
+bioinformatics|生物信息学|Bioinformatics|计算机与数据|I,C,R|生物!,数学!,化学+
+biology|生物学|Biology|生命科学|I,R,S|生物!,化学!,数学+
+biomedical-engineering|生物医学工程|Biomedical Engineering|工程与制造|I,R,S|数学!,物理!,生物+
+biotechnology|生物技术|Biotechnology|生命科学|I,R,E|生物!,化学!,数学+
+business-administration|商学／工商管理|Business Administration|商业与管理|E,C,S|商务!,经济+,数学+
+chemical-engineering|化学工程|Chemical Engineering|工程与制造|I,R,C|数学!,化学!,物理+
+chemistry|化学|Chemistry|数学与自然科学|I,R,C|化学!,数学!,物理+
+civil-engineering|土木工程|Civil Engineering|工程与制造|R,I,E|数学!,物理!,高数+
+cognitive-science|认知科学|Cognitive Science|社会科学|I,S,A|数学!,生物+,高数+
+communications|传播学|Communications|传媒与创意|E,A,S|商务+,经济+,数学~
+comparative-literature|比较文学|Comparative Literature|人文与语言|A,I,S|经济+,商务~,数学~
+computer-engineering|计算机工程|Computer Engineering|工程与制造|I,R,C|数学!,高数!,物理!
+computer-science|计算机科学|Computer Science|计算机与数据|I,C,R|数学!,高数!,物理+
+creative-writing|创意写作|Creative Writing|传媒与创意|A,I,S|商务~,经济~,数学~
+criminology|犯罪学|Criminology|社会科学|I,S,E|经济+,生物~,数学+
+cybersecurity|网络安全分析与运营|Cybersecurity Analytics & Operations|计算机与数据|I,C,R|数学!,高数+,物理+
+dance|舞蹈|Dance|传媒与创意|A,R,S|生物+,商务~,数学~
+data-science|数据科学|Data Science|计算机与数据|I,C,E|数学!,高数!,经济+
+dental-hygiene|口腔卫生学|Dental Hygiene|健康与医学|S,R,C|生物!,化学!,数学+
+digital-arts-media-design|数字艺术与媒体设计|Digital Arts & Media Design|传媒与创意|A,I,R|数学+,物理~,商务+
+drama|戏剧|Drama|传媒与创意|A,S,E|商务~,经济~,生物~
+earth-science|地球科学|Earth Science|环境与地球|I,R,C|化学!,物理!,数学!
+economics|经济学|Economics|社会科学|I,E,C|数学!,高数!,经济!
+education|教育学|Education|社会科学|S,E,A|经济+,生物~,数学+
+electrical-electronic-engineering|电子电气工程|Electrical & Electronic Engineering|工程与制造|I,R,C|数学!,高数!,物理!
+energy-engineering|能源工程|Energy Engineering|工程与制造|I,R,E|数学!,物理!,化学+
+engineering-science|工程科学|Engineering Science|工程与制造|I,R,C|数学!,高数!,物理!
+english|英语语言与文学|English|人文与语言|A,I,S|经济+,商务~,数学~
+environmental-engineering|环境工程|Environmental Engineering|工程与制造|I,R,S|数学!,化学!,物理+
+environmental-science|环境科学|Environmental Science|环境与地球|I,R,S|生物!,化学!,数学+
+film-tv-video|影视学|Film, Television & Video|传媒与创意|A,E,S|商务+,经济+,数学~
+finance|金融学|Finance|商业与管理|E,C,I|数学!,经济!,高数+
+fine-art|纯艺术|Fine Art|传媒与创意|A,I,R|商务~,经济~,数学~
+food-science|食品科学|Food Science|生命科学|I,R,C|化学!,生物!,数学+
+forensic-science|法医学／法庭科学|Forensic Science|健康与医学|I,R,C|化学!,生物!,数学+
+forest-ecosystem-management|森林生态系统管理|Forest Ecosystem Management|环境与地球|R,I,E|生物!,化学+,数学+
+game-design|游戏设计|Game Design|传媒与创意|A,I,R|数学!,高数+,物理+
+gender-studies|性别研究|Gender & Sexuality Studies|社会科学|I,S,A|经济+,商务~,生物~
+geography|地理学|Geography|环境与地球|I,R,S|数学!,经济+,生物+
+global-international-studies|全球与国际研究|Global & International Studies|社会科学|I,S,E|经济!,商务+,数学+
+graphic-design|平面设计|Graphic Design|建筑与设计|A,R,E|商务+,数学~,经济~
+history|历史学|History|人文与语言|I,A,S|经济+,商务~,数学~
+hospitality-management|酒店与款待业管理|Hospitality Management|商业与管理|E,S,C|商务!,经济+,数学+
+humanities|人文学科|Humanities|人文与语言|A,I,S|经济+,商务~,数学~
+industrial-engineering|工业工程|Industrial Engineering|工程与制造|I,R,E|数学!,高数!,物理+
+information-science-technology|信息科学与技术|Information Sciences & Technology|计算机与数据|I,C,E|数学!,商务+,高数+
+information-systems|信息系统|Information Systems|计算机与数据|C,E,I|商务!,数学!,经济+
+international-relations|国际关系|International Relations|社会科学|I,E,S|经济!,数学+,商务+
+journalism|新闻学|Journalism|传媒与创意|A,E,S|经济+,商务~,数学+
+kinesiology|运动机能学|Kinesiology|健康与医学|S,R,I|生物!,化学+,数学+
+labor-human-resources|劳动与人力资源学|Labor & Human Resources|商业与管理|E,S,C|商务!,经济!,数学+
+land-economy|土地经济学|Land Economy|社会科学|I,E,C|经济!,数学!,商务+
+landscape-architecture|景观建筑设计|Landscape Architecture|建筑与设计|A,R,I|生物!,数学!,物理+
+linguistics|语言学|Linguistics|人文与语言|I,A,S|数学!,生物+,经济~
+management|管理学|Management|商业与管理|E,C,S|商务!,经济+,数学+
+marketing|市场营销学|Marketing|商业与管理|E,A,S|商务!,经济!,数学+
+materials-science-engineering|材料科学与工程|Materials Science & Engineering|工程与制造|I,R,C|化学!,物理!,数学!
+mathematical-sciences|数学科学|Mathematical Sciences|数学与自然科学|I,C,R|数学!,高数!,物理+
+mathematics|数学|Mathematics|数学与自然科学|I,C,R|数学!,高数!,物理+
+mechanical-engineering|机械工程|Mechanical Engineering|工程与制造|R,I,C|数学!,高数!,物理!
+media-studies|媒体研究|Media Studies|传媒与创意|A,I,E|经济+,商务+,数学~
+music|音乐|Music|传媒与创意|A,S,R|数学+,物理+,商务~
+neuroscience|神经科学|Neuroscience|生命科学|I,R,S|生物!,化学!,数学+
+nursing|护理学|Nursing|健康与医学|S,R,C|生物!,化学+,数学+
+nutrition-science|营养学|Nutrition Science|健康与医学|I,S,R|生物!,化学!,数学+
+pharmacy|药学|Pharmacy|健康与医学|I,C,S|化学!,生物!,数学+
+philosophy|哲学|Philosophy|人文与语言|I,A,S|数学+,经济+,商务~
+photography|摄影|Photography|传媒与创意|A,R,E|物理+,商务+,数学~
+physics-applied-physics|物理／应用物理|Physics / Applied Physics|数学与自然科学|I,R,C|数学!,高数!,物理!
+political-science|政治学|Political Science|社会科学|I,E,S|经济!,数学+,商务~
+ppe|哲学、政治与经济|PPE|社会科学|I,E,A|数学!,经济!,商务+
+psychology|心理学|Psychology|社会科学|I,S,A|生物+,数学!,经济~
+public-health|公共卫生学|Public Health|健康与医学|S,I,E|生物!,数学!,经济+
+public-policy|公共政策|Public Policy|社会科学|I,E,S|经济!,数学!,商务+
+recreation-tourism-management|休闲、公园与旅游管理|Recreation, Park & Tourism Management|商业与管理|E,S,R|商务!,经济+,生物~
+religious-studies|宗教研究|Religious Studies|人文与语言|I,A,S|经济+,商务~,数学~
+risk-management|风险管理学|Risk Management|商业与管理|I,C,E|数学!,高数+,经济!
+sociology|社会学|Sociology|社会科学|I,S,E|经济+,数学!,商务~
+software-engineering|软件工程|Software Engineering|计算机与数据|I,C,R|数学!,高数+,物理+
+sports-management|体育管理|Sports Management|商业与管理|E,S,R|商务!,经济+,生物~
+statistics|统计学|Statistics|数学与自然科学|I,C,E|数学!,高数!,经济+
+supply-chain-information-systems|供应链与信息系统|Supply Chain & Information Systems|商业与管理|C,E,I|数学!,商务!,经济+
+theatre-studies|戏剧研究|Theatre Studies|传媒与创意|A,S,I|商务~,经济~,生物~
+visual-arts|视觉艺术|Visual Arts|传媒与创意|A,I,R|商务~,经济~,数学~
+womens-studies|女性研究|Women’s Studies|社会科学|I,S,A|经济+,商务~,生物~
+zoology|动物学|Zoology|生命科学|I,R,S|生物!,化学+,数学+
